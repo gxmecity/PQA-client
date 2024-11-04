@@ -55,8 +55,8 @@ export function Component() {
             </Form>
 
             <p className='text-muted-foreground text-sm text-center'>
-              By clicking continue, you agree to our Terms of Service and
-              Privacy Policy.
+              By clicking sign in, you agree to our Terms of Service and Privacy
+              Policy.
             </p>
           </div>
         </div>

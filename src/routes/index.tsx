@@ -20,15 +20,20 @@ export const player = createBrowserRouter([
   },
 ])
 
-export const dashboard = createBrowserRouter([
+export const dashboard = createBrowserRouter(
+  [
+    {
+      path: '/',
+      lazy: () => import('@/app/Dashboard/Dashboard'),
+      errorElement: <ErrorPage />,
+      children: dashboardRoutes,
+    },
+    {
+      path: '*',
+      element: <Navigate to='/' />,
+    },
+  ],
   {
-    path: '/',
-    lazy: () => import('@/app/Dashboard/Dashboard'),
-    errorElement: <ErrorPage />,
-    children: dashboardRoutes,
-  },
-  {
-    path: '*',
-    element: <Navigate to='/' />,
-  },
-])
+    basename: '/app',
+  }
+)
