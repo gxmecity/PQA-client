@@ -1,4 +1,7 @@
-import React from 'react'
+import { StarFilledIcon } from '@radix-ui/react-icons'
+import { Pencil, Star } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
+import AppButton from './AppButton'
 import {
   Card,
   CardContent,
@@ -7,23 +10,23 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import { Pencil, Play, Star, StarHalf } from 'lucide-react'
-import AppButton from './AppButton'
-import { StarFilledIcon } from '@radix-ui/react-icons'
-import { useNavigate } from 'react-router-dom'
 
-const QuizItem = () => {
+interface Prop {
+  data: Quiz
+}
+
+const QuizItem = ({ data }: Prop) => {
   const navigate = useNavigate()
 
   return (
     <Card>
       <CardHeader>
-        <CardTitle className='mb-2'>Game Day 3 Quiz</CardTitle>
+        <CardTitle className='mb-2'>{data.title}</CardTitle>
         <CardDescription className=' text-xs italic'>
           Private Quiz by KIzito Azubuike
         </CardDescription>
         <CardDescription className=' text-xs italic'>
-          This quiz has 4 rounds
+          This quiz has {data.rounds.length} rounds
         </CardDescription>
       </CardHeader>
       <CardContent>
@@ -36,19 +39,10 @@ const QuizItem = () => {
           <AppButton
             text='Edit'
             icon={<Pencil />}
-            onClick={() => navigate('/dashboard/quiz/1233')}
+            onClick={() => navigate(`/dashboard/quiz/${data._id}`)}
           />
         </div>
       </CardContent>
-      <CardFooter className=' flex items-center'>
-        <span className=' flex gap-1 items-center'>
-          <StarFilledIcon />
-          <StarFilledIcon />
-          <StarFilledIcon />
-          <StarFilledIcon />
-          <StarFilledIcon />
-        </span>
-      </CardFooter>
     </Card>
   )
 }

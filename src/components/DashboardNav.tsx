@@ -1,5 +1,4 @@
-import { Link } from 'react-router-dom'
-import { cn } from '@/lib/utils'
+import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   NavigationMenu,
   NavigationMenuContent,
@@ -9,27 +8,23 @@ import {
   NavigationMenuTrigger,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-import { ModeToggle } from './ToggleTheme'
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { SidebarTrigger } from './ui/sidebar'
-import AppButton from './AppButton'
-import { HamburgerMenuIcon } from '@radix-ui/react-icons'
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
   SheetHeader,
-  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
+import { cn } from '@/lib/utils'
+import { HamburgerMenuIcon } from '@radix-ui/react-icons'
+import { ChevronDown } from 'lucide-react'
+import { Link } from 'react-router-dom'
+import AppButton from './AppButton'
+import { ModeToggle } from './ToggleTheme'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible'
-import { Button } from './ui/button'
-import { ArrowBigDown, ChevronDown } from 'lucide-react'
-import clsx from 'clsx'
 
 interface ListItem {
   children: any

@@ -5,6 +5,7 @@ import FormInput from './FormInput'
 import FormSelect from './FormSelect'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
+import FormRadio from './FormRadio'
 
 interface Props {
   activeQuestionIndex: number | null
@@ -24,6 +25,10 @@ const questionTypes: SelectOptionType[] = [
     value: 'multiple_choice',
   },
   {
+    name: 'True or False',
+    value: 'true_or_false',
+  },
+  {
     name: 'Question Only',
     value: 'question_only',
   },
@@ -37,6 +42,17 @@ const assetOptios: SelectOptionType[] = [
   {
     name: 'Image',
     value: 'image',
+  },
+]
+
+const truthyOptions: SelectOptionType[] = [
+  {
+    name: 'True',
+    value: 'true',
+  },
+  {
+    name: 'False',
+    value: 'false',
   },
 ]
 
@@ -145,6 +161,14 @@ const QuestionItem = ({
                 ))}
               </div>
             </>
+          )}
+          {type === 'true_or_false' && (
+            <FormRadio
+              form={form}
+              label='Correct Answer'
+              name={`questions[${index}].answer.answer_text`}
+              options={truthyOptions}
+            />
           )}
           {type === 'open_question' && (
             <FormInput

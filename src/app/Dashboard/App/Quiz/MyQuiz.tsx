@@ -2,6 +2,7 @@ import AppButton from '@/components/AppButton'
 import { AppSelect, SelectOptionType } from '@/components/AppSelect'
 import QuizItem from '@/components/QuizItem'
 import { Label } from '@/components/ui/label'
+import { quizzes } from '@/data'
 import { StarFilledIcon } from '@radix-ui/react-icons'
 import { Plus } from 'lucide-react'
 
@@ -51,14 +52,9 @@ export function Component() {
       <div>
         <Label className=' my-6 block'>My Quizes (08)</Label>
         <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
-          <QuizItem />
+          {quizzes.map((quiz) => (
+            <QuizItem key={quiz._id} data={quiz} />
+          ))}
         </div>
       </div>
     </div>

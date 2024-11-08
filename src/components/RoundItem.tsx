@@ -200,13 +200,13 @@ const RoundItem = ({ data }: Props) => {
         <>
           {' '}
           <CardHeader>
-            <CardTitle className='mb-2'>Game Day 3 Quiz</CardTitle>
+            <CardTitle className='mb-2'>{data.round_name}</CardTitle>
             <CardDescription className=' text-xs italic flex gap-2'>
               <span className=' border-r border-r-border pr-2'>
-                Questions: 10
+                Questions: {data.questions.length}
               </span>
               <span className=' border-r border-r-border pr-2'>
-                Questions mode: Trivia
+                Questions mode: {data.round_type}
               </span>
             </CardDescription>
           </CardHeader>

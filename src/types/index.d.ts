@@ -8,6 +8,7 @@ declare interface Quiz {
   _type: string
   _id: string
   _updatedAt: string
+  description?: string
   creator: Reference
   _createdAt: string
   publish: boolean

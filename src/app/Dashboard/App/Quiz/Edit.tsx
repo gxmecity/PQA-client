@@ -11,6 +11,7 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Form } from '@/components/ui/form'
+import { quizzes } from '@/data'
 import { createQuizSchema } from '@/schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlignVerticalDistributeCenter, Plus } from 'lucide-react'
@@ -18,15 +19,17 @@ import { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 
 export function Component() {
+  const quiz = quizzes[0]
+
   const form = useForm({
     resolver: zodResolver(createQuizSchema),
     defaultValues: {
-      title: '',
-      description: '',
+      title: quiz.title,
+      description: quiz.description ?? '',
     },
   })
 
-  const [rounds, setRounds] = useState<Round[]>([])
+  const [rounds, setRounds] = useState<Round[]>(quiz.rounds)
 
   const handleSubmit: SubmitHandler<any> = (data) => {
     console.log(data)
@@ -47,7 +50,7 @@ export function Component() {
 
   return (
     <section className='dashboard_section overflow-x-hidden'>
-      <h1 className='dashboard_header'>PQT Quiz Game week 3</h1>
+      <h1 className='dashboard_header'>{quiz.title}</h1>
       <div className=' flex-auto'>
         <Card className=' w-full mb-5'>
           <CardHeader>
