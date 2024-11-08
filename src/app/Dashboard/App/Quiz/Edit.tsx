@@ -2,7 +2,6 @@ import AppButton from '@/components/AppButton'
 import EmptyState from '@/components/EmptyState'
 import FormInput from '@/components/FormInput'
 import FormTextArea from '@/components/FormTextArea'
-import QuizItem from '@/components/QuizItem'
 import RoundItem from '@/components/RoundItem'
 import {
   Card,
@@ -12,7 +11,6 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Form } from '@/components/ui/form'
-import { Label } from '@/components/ui/label'
 import { createQuizSchema } from '@/schemas'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlignVerticalDistributeCenter, Plus } from 'lucide-react'

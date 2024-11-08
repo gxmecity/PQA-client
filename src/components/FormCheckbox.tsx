@@ -1,14 +1,12 @@
-import React from 'react'
+import clsx from 'clsx'
+import { Checkbox } from './ui/checkbox'
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
-  FormDescription,
-  FormMessage,
 } from './ui/form'
-import { Checkbox } from './ui/checkbox'
-import clsx from 'clsx'
 
 interface FormChecboxComponent {
   name: string

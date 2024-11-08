@@ -1,11 +1,10 @@
-import React from 'react'
+import { UploadCloud, XIcon } from 'lucide-react'
 import { SelectOptionType } from './AppSelect'
+import FormCheckbox from './FormCheckbox'
 import FormInput from './FormInput'
 import FormSelect from './FormSelect'
-import { Label } from './ui/label'
 import { Input } from './ui/input'
-import FormCheckbox from './FormCheckbox'
-import { UploadCloud, XIcon } from 'lucide-react'
+import { Label } from './ui/label'
 
 interface Props {
   activeQuestionIndex: number | null
