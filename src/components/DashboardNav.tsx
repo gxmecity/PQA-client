@@ -1,7 +1,4 @@
-'use client'
-
 import { Link } from 'react-router-dom'
-
 import { cn } from '@/lib/utils'
 import {
   NavigationMenu,
@@ -14,6 +11,25 @@ import {
 } from '@/components/ui/navigation-menu'
 import { ModeToggle } from './ToggleTheme'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { SidebarTrigger } from './ui/sidebar'
+import AppButton from './AppButton'
+import { HamburgerMenuIcon } from '@radix-ui/react-icons'
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet'
+import {
+  Collapsible,
+  CollapsibleContent,
+  CollapsibleTrigger,
+} from './ui/collapsible'
+import { Button } from './ui/button'
+import { ArrowBigDown, ChevronDown } from 'lucide-react'
+import clsx from 'clsx'
 
 interface ListItem {
   children: any
@@ -25,6 +41,7 @@ interface ListItem {
 export function NavigationMenuDemo() {
   return (
     <NavigationMenu className=' px-5 h-16 border-b border-b-border flex items-center gap-5 w-full max-w-full justify-start flex-none'>
+      <MobileNav />
       <a href='/'>The Pub Quiz</a>
       <NavigationMenuList className=' sm:hidden'>
         <NavigationMenuItem>
@@ -113,3 +130,71 @@ const ListItem = ({ title, url, children, classname }: ListItem) => {
   )
 }
 ListItem.displayName = 'ListItem'
+
+const MobileNav = () => {
+  return (
+    <Sheet>
+      <SheetTrigger className=' hidden sm:block'>
+        <AppButton icon={<HamburgerMenuIcon />} variant='outline' />
+      </SheetTrigger>
+      <SheetContent className=' max-w-[450px]' side='left'>
+        <SheetHeader>
+          <p>The Pub quiz</p>
+        </SheetHeader>
+        <div className=' flex flex-col justify-start h-full pb-10'>
+          <NavigationMenuList className=' flex flex-col pt-8 space-y-5'>
+            <NavigationMenuItem className=' w-full'>
+              <>
+                <Collapsible>
+                  <CollapsibleTrigger className=' w-full flex justify-between items-center'>
+                    Create <ChevronDown />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <ListItem
+                      url='/dashboard/create-quiz'
+                      title='New Quiz Game'>
+                      A specific and ordered list of questions in rounds to use
+                      on game events.
+                    </ListItem>
+                    <ListItem title='New Game Event' url=''>
+                      A hosted quiz game to present to a group of people for a
+                      perfect quiz night.
+                    </ListItem>
+
+                    <ListItem url='/' title='Register Team'>
+                      Register a new team to participate in your events
+                    </ListItem>
+                  </CollapsibleContent>
+                </Collapsible>
+              </>
+            </NavigationMenuItem>
+
+            <NavigationMenuItem className='w-full'>
+              <NavigationMenuLink asChild className=''>
+                <Link to='/dashboard/quiz'>My Quiz</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem className='w-full'>
+              <NavigationMenuLink asChild className=''>
+                <Link to='/'>My Events</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+            <NavigationMenuItem className='w-full'>
+              <NavigationMenuLink asChild className=''>
+                <Link to='/'>My Series</Link>
+              </NavigationMenuLink>
+            </NavigationMenuItem>
+          </NavigationMenuList>
+
+          <div className='mt-auto flex gap-3 items-center'>
+            <Avatar className=''>
+              <AvatarFallback className='bg-primary'>AK</AvatarFallback>
+            </Avatar>
+            <small className='truncate'>Azubuike Kizto</small>
+            <ChevronDown className=' ml-auto' />
+          </div>
+        </div>
+      </SheetContent>
+    </Sheet>
+  )
+}
