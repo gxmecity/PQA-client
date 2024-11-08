@@ -21,6 +21,7 @@ interface FormInputComponent {
   placeholder?: string
   icon?: ReactNode
   description?: string
+  classname?: string
 }
 
 const FormInput = ({
@@ -31,6 +32,7 @@ const FormInput = ({
   icon,
   description,
   placeholder,
+  classname,
 }: FormInputComponent) => {
   const [fieldType, setFieldType] = useState<HTMLInputTypeAttribute>(type)
 
@@ -44,12 +46,13 @@ const FormInput = ({
       control={form.control}
       name={name}
       render={({ field }) => (
-        <FormItem>
+        <FormItem className='flex-auto'>
           {label && <FormLabel>{label}</FormLabel>}
           <FormControl>
             <div
               className={clsx(
-                ' flex items-center rounded-md w-full h-12 gap-1 border border-border px-2'
+                ' flex items-center rounded-md w-full h-12 gap-1 border border-border px-2',
+                classname
               )}>
               {icon && <>{icon}</>}
               <Input

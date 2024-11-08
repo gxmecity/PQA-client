@@ -1,0 +1,19 @@
+/* 1. Use a more-intuitive box-sizing model */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+  margin: 0;
+}
+
+.dashboard_section {
+  @apply flex-auto px-10 sm:px-4 py-8 flex flex-col gap-5 overflow-auto;
+}
+
+.dashboard_header {
+  @apply text-3xl font-medium sm:text-xl md:text-2xl;
+}
+
+.width-1 {
+  width: calc((100% / 3) - 10px);
+}

@@ -3,6 +3,10 @@ import { Navigate, RouteObject } from 'react-router-dom'
 
 export const dashboardRoutes: RouteObject[] = [
   {
+    path: '',
+    element: <Navigate to='/dashboard' />,
+  },
+  {
     path: '/login',
     lazy: () => import('./Auth/Login'),
   },
@@ -11,7 +15,7 @@ export const dashboardRoutes: RouteObject[] = [
     lazy: () => import('./Auth/Signup'),
   },
   {
-    path: '',
+    path: '/dashboard',
     lazy: () => import('./App/DashboardPage'),
     errorElement: <ErrorPage />,
     children: [
@@ -19,6 +23,22 @@ export const dashboardRoutes: RouteObject[] = [
         path: '',
         lazy: () => import('./App/Home'),
       },
+      {
+        path: 'quiz',
+        lazy: () => import('./App/Quiz/MyQuiz'),
+      },
+      {
+        path: 'quiz/:id',
+        lazy: () => import('./App/Quiz/Edit'),
+      },
+      {
+        path: 'create-quiz',
+        lazy: () => import('./App/Quiz/Create'),
+      },
     ],
+  },
+  {
+    path: '*',
+    element: <Navigate to='/dashboard' />,
   },
 ]

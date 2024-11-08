@@ -26,7 +26,7 @@ export function NavigationMenuDemo() {
   return (
     <NavigationMenu className=' px-5 h-16 border-b border-b-border flex items-center gap-5 w-full max-w-full justify-start flex-none'>
       <a href='/'>The Pub Quiz</a>
-      <NavigationMenuList>
+      <NavigationMenuList className=' sm:hidden'>
         <NavigationMenuItem>
           <>
             <NavigationMenuTrigger>Create</NavigationMenuTrigger>
@@ -47,7 +47,7 @@ export function NavigationMenuDemo() {
                     </a>
                   </NavigationMenuLink>
                 </li>
-                <ListItem url='/docs' title='New Quiz Game'>
+                <ListItem url='/dashboard/create-quiz' title='New Quiz Game'>
                   A specific and ordered list of questions in rounds to use on
                   game events.
                 </ListItem>
@@ -69,7 +69,7 @@ export function NavigationMenuDemo() {
 
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to='/'>My Quiz</Link>
+            <Link to='/dashboard/quiz'>My Quiz</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
@@ -85,7 +85,7 @@ export function NavigationMenuDemo() {
       </NavigationMenuList>
       <div className='ml-auto flex gap-3 items-center'>
         <ModeToggle />
-        <Avatar>
+        <Avatar className=' sm:hidden'>
           <AvatarFallback className='bg-primary'>AK</AvatarFallback>
         </Avatar>
       </div>

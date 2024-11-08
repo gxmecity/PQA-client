@@ -1,6 +1,5 @@
 import { NavigationMenuDemo } from '@/components/DashboardNav'
-import { ModeToggle } from '@/components/ToggleTheme'
-import { Link, Outlet } from 'react-router-dom'
+import { Outlet } from 'react-router-dom'
 
 export function Component() {
   return (

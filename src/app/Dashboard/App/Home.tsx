@@ -5,8 +5,8 @@ import { CalendarCheck, CalendarX, Dices, Layers2, Users } from 'lucide-react'
 
 export function Component() {
   return (
-    <section className=' flex-auto px-10 py-8 flex flex-col gap-5 overflow-auto'>
-      <h1 className=' text-3xl font-semibold'>Welcome, Azubuike Kizito</h1>
+    <section className=' dashboard_section'>
+      <h1 className=' dashboard_header'>Welcome, Azubuike Kizito</h1>
       <div className='grid grid-cols-4 gap-4 md:grid-cols-2 sm:flex sm:flex-col'>
         <DashboardTile
           title='Total Games'

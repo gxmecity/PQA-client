@@ -17,6 +17,7 @@ interface Props {
   loading?: boolean
   disabled?: boolean
   type?: HTMLButtonElement['type']
+  onClick?: () => void
 }
 
 const AppButton = ({
@@ -27,15 +28,17 @@ const AppButton = ({
   loading,
   disabled,
   type = 'button',
+  onClick,
 }: Props) => {
   return (
     <Button
       variant={variant}
       className={classname}
       type={type}
+      onClick={onClick}
       disabled={loading || disabled}>
+      {icon && <span>{icon}</span>}
       {text && <span>{loading ? 'Loading...' : text}</span>}
-      {icon && <span>icon</span>}
     </Button>
   )
 }
