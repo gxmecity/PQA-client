@@ -28,6 +28,11 @@ export const dashboardRoutes: RouteObject[] = [
         lazy: () => import('./App/Quiz/MyQuiz'),
       },
       {
+        path: 'events',
+        lazy: () => import('./App/Events/MyEvents'),
+      },
+
+      {
         path: 'quiz/:id',
         lazy: () => import('./App/Quiz/Edit'),
       },
@@ -36,6 +41,11 @@ export const dashboardRoutes: RouteObject[] = [
         lazy: () => import('./App/Quiz/Create'),
       },
     ],
+  },
+  {
+    path: '/broadcast/:id',
+    lazy: () => import('./App/Events/Broadcast'),
+    errorElement: <ErrorPage />,
   },
   {
     path: '*',

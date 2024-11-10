@@ -86,12 +86,12 @@ export function NavigationMenuDemo() {
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to='/'>My Events</Link>
+            <Link to='/dashboard/events'>My Events</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
         <NavigationMenuItem>
           <NavigationMenuLink asChild className={navigationMenuTriggerStyle()}>
-            <Link to='/'>My Series</Link>
+            <Link to='/dashboard/series'>My Series</Link>
           </NavigationMenuLink>
         </NavigationMenuItem>
       </NavigationMenuList>

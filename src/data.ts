@@ -8,10 +8,10 @@ export const quizzes: Quiz[] = [
     publish: true,
     _rev: '1',
     plays: 100,
-    title: 'General Knowledge Quiz',
+    title: 'PQT Season 2 Gameweek 6',
     rounds: [
       {
-        round_name: 'Round 1',
+        round_name: 'Trivia Round',
         round_type: 'trivia',
         _type: 'round',
         questions: [
@@ -59,7 +59,7 @@ export const quizzes: Quiz[] = [
         timer: 30,
       },
       {
-        round_name: 'Round 2',
+        round_name: 'Rapid Fire',
         round_type: 'dealers_choice',
         _type: 'round',
         questions: [

@@ -42,6 +42,7 @@ declare interface QuestionElement {
 
 declare interface Answer {
   answer_text: string
+  is_blackbox?: boolean
 }
 
 declare interface QuestionQuestion {

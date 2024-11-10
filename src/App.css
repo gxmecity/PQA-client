@@ -17,3 +17,30 @@
 .width-1 {
   width: calc((100% / 3) - 10px);
 }
+
+.gd-text-primary {
+  @apply inline-block bg-gradient-to-tr from-white to-primary text-transparent bg-clip-text;
+}
+
+.progress {
+  --size: 100px;
+  width: var(--size);
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: conic-gradient(#000 var(--progress, 0), #ccc 0);
+  display: grid;
+  place-content: center;
+  transition: all ease-in;
+}
+.progress:after {
+  width: calc(var(--size) * 0.8);
+  aspect-ratio: 1;
+  content: attr(data-value);
+  display: grid;
+  background: #ffffff;
+  border-radius: 50%;
+  display: grid;
+  font-size: calc(var(--size) * 0.4);
+  place-content: center;
+  font-family: arial;
+}

@@ -70,3 +70,17 @@ export const RoundSchema = z.object({
 })
 
 export const updateQuizSchema = z.object({})
+
+// Event Schema
+export const createEventSchema = z.object({
+  title: z
+    .string({
+      required_error: 'Title is reuired',
+    })
+    .min(1, 'Title is required'),
+  description: z.string({
+    required_error: 'Password is required',
+  }),
+  game: ReferenceSchema,
+  scheduled_date: z.string(),
+})
