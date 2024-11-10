@@ -1,8 +1,8 @@
-import React, { useState } from 'react'
-import WaitingArea from './WaitingArea'
-import { quizzes } from '@/data'
-import Round from './Round'
 import GameInterface from '@/components/GameInterface'
+import { quizzes } from '@/data'
+import { useState } from 'react'
+import Round from './Round'
+import WaitingArea from './WaitingArea'
 
 export default function Game() {
   const [gameStarted, setGameStarted] = useState(false)

@@ -1,9 +1,9 @@
 import AppButton from '@/components/AppButton'
 import Clock from '@/components/Countdown'
-import React, { useState } from 'react'
+import GameInterface from '@/components/GameInterface'
+import { useState } from 'react'
 import { FullScreen, useFullScreenHandle } from 'react-full-screen'
 import Game from './Game/Game'
-import GameInterface from '@/components/GameInterface'
 
 export function Component() {
   const [broadcast, setBroadcast] = useState(false)

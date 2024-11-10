@@ -1,6 +1,5 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Answer from './Answer'
 import CircularProgress from '@/components/CircularProgress'
+import { useEffect, useState } from 'react'
 
 interface Props {
   data: QuestionElement

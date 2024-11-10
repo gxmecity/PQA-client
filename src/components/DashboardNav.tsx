@@ -139,29 +139,25 @@ const MobileNav = () => {
         <div className=' flex flex-col justify-start h-full pb-10'>
           <NavigationMenuList className=' flex flex-col pt-8 space-y-5'>
             <NavigationMenuItem className=' w-full'>
-              <>
-                <Collapsible>
-                  <CollapsibleTrigger className=' w-full flex justify-between items-center'>
-                    Create <ChevronDown />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent>
-                    <ListItem
-                      url='/dashboard/create-quiz'
-                      title='New Quiz Game'>
-                      A specific and ordered list of questions in rounds to use
-                      on game events.
-                    </ListItem>
-                    <ListItem title='New Game Event' url=''>
-                      A hosted quiz game to present to a group of people for a
-                      perfect quiz night.
-                    </ListItem>
+              <Collapsible>
+                <CollapsibleTrigger className=' w-full flex justify-between items-center'>
+                  Create <ChevronDown />
+                </CollapsibleTrigger>
+                <CollapsibleContent>
+                  <ListItem url='/dashboard/create-quiz' title='New Quiz Game'>
+                    A specific and ordered list of questions in rounds to use on
+                    game events.
+                  </ListItem>
+                  <ListItem title='New Game Event' url=''>
+                    A hosted quiz game to present to a group of people for a
+                    perfect quiz night.
+                  </ListItem>
 
-                    <ListItem url='/' title='Register Team'>
-                      Register a new team to participate in your events
-                    </ListItem>
-                  </CollapsibleContent>
-                </Collapsible>
-              </>
+                  <ListItem url='/' title='Register Team'>
+                    Register a new team to participate in your events
+                  </ListItem>
+                </CollapsibleContent>
+              </Collapsible>
             </NavigationMenuItem>
 
             <NavigationMenuItem className='w-full'>
