@@ -1,7 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
-import Question from './Question'
-import { quizzes } from '@/data'
+import { useState } from 'react'
 import Answer from './Answer'
+import Question from './Question'
 
 type Props = {
   data: Round
@@ -47,12 +46,12 @@ export default function Trivia({ data, onRoundEnded }: Props) {
     <Question
       data={data.questions[activeQuestionIndex]}
       onTimeComplete={handleTimeComplete}
-      timer={20}
+      timer={5}
       questionNumber={activeQuestionIndex + 1}
       shouldRevealAnswer={finishedQuestion}
       shouldCounntdown={!finishedQuestion}
       isLastQuestion={isLastQuestion}
-      goToNext={() => setRevealAnswer(true)}
+      goToNext={() => finishedQuestion && setRevealAnswer(true)}
     />
   )
 }

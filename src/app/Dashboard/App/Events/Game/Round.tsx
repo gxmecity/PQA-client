@@ -3,8 +3,13 @@ import RoundIntro from './RoundIntro'
 import { quizzes } from '@/data'
 import Trivia from './Rounds/Trivia'
 import Dealers from './Rounds/Dealers'
+import EndRound from './EndRound'
 
-export default function Round() {
+interface Props {
+  onQuizEnded: () => void
+}
+
+export default function Round({ onQuizEnded }: Props) {
   const quiz = quizzes[0]
   const [started, setStarted] = useState(false)
   const [ended, setEnded] = useState(false)
@@ -14,17 +19,22 @@ export default function Round() {
   const timerRef = useRef<any>(null)
   const [round, setRound] = useState(0)
 
+  const isLastRound = round === quiz.rounds.length - 1
+
   const next = () => {
-    if (round === quiz.rounds.length - 1) {
-      setEnded(true)
+    if (isLastRound) {
+      onQuizEnded()
       return
     }
     setRound((prev) => prev + 1)
     setStarted(false)
+    setEnded(false)
   }
 
   const roundComponents: any = {
-    trivia: <Trivia data={quiz.rounds[round]} onRoundEnded={next} />,
+    trivia: (
+      <Trivia data={quiz.rounds[round]} onRoundEnded={() => setEnded(true)} />
+    ),
     dealers_choice: <Dealers />,
   }
 
@@ -48,7 +58,15 @@ export default function Round() {
     }, 1000)
   }
 
-  if (ended) return <>Quiz Ended</>
+  if (ended)
+    return (
+      <EndRound
+        RoundTitle={quiz.rounds[round].round_name}
+        isLastRound={isLastRound}
+        scores={[]}
+        nextStep={next}
+      />
+    )
 
   if (starting)
     return (

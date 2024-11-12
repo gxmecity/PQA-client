@@ -1,4 +1,5 @@
 import CircularProgress from '@/components/CircularProgress'
+import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 interface Props {
@@ -22,6 +23,7 @@ export default function Question({
   goToNext,
 }: Props) {
   const [countDownn, setCountDownn] = useState(timer)
+  const [animate, setAnimate] = useState(false)
 
   const handleKeyPress = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -45,6 +47,12 @@ export default function Question({
 
   useEffect(() => {
     setCountDownn(timer)
+
+    if (!shouldRevealAnswer) setAnimate(true)
+
+    const animationTimer = setTimeout(() => setAnimate(false), 700)
+
+    return () => clearTimeout(animationTimer)
   }, [questionNumber])
 
   useEffect(() => {
@@ -53,13 +61,17 @@ export default function Question({
     return () => {
       window.removeEventListener('keydown', handleKeyPress)
     }
-  }, [])
+  }, [shouldRevealAnswer])
 
   if (data.question.standalone_asset) return <></>
 
   return (
     <>
-      <div className='flex h-full justify-center items-start flex-col max-w-7xl mx-auto gap-16 relative'>
+      <div
+        className={cn(
+          'flex h-full justify-center items-start flex-col max-w-7xl mx-auto gap-16 relative',
+          animate ? 'slide-in-elliptic-top-fwd' : ''
+        )}>
         <div className=' flex items-center gap-2 justify-between w-full'>
           <div className=' text-left'>
             <p className=' text-xl font-medium mb-3'>

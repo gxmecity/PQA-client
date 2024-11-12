@@ -6,6 +6,14 @@ import WaitingArea from './WaitingArea'
 
 export default function Game() {
   const [gameStarted, setGameStarted] = useState(false)
+  const [gameEnded, setGameEnded] = useState(false)
+
+  if (gameEnded)
+    return (
+      <GameInterface>
+        <>Quiz Ended</>
+      </GameInterface>
+    )
 
   if (!gameStarted)
     return (
@@ -14,7 +22,7 @@ export default function Game() {
 
   return (
     <GameInterface>
-      <Round />
+      <Round onQuizEnded={() => setGameEnded(true)} />
     </GameInterface>
   )
 }

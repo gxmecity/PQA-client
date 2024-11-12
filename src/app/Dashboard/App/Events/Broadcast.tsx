@@ -13,7 +13,7 @@ export function Component() {
   const startBroadcast = () => {
     setBroadcast(true)
 
-    handle.enter()
+    // handle.enter()
   }
 
   return (

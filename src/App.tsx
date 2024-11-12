@@ -1,5 +1,6 @@
 import { RouterProvider } from 'react-router-dom'
 import './App.css'
+import './Animations.css'
 import { getApp } from './routes/utils/helpers'
 import { ThemeProvider } from './context/theme-provider'
 

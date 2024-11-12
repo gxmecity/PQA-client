@@ -44,3 +44,11 @@
   place-content: center;
   font-family: arial;
 }
+
+.clip-start {
+  clip-path: polygon(0 0, 67% 0, 100% 100%, 0% 100%);
+}
+
+.clip-end {
+  clip-path: polygon(30% 1%, 100% 0, 100% 100%, 0% 100%);
+}
