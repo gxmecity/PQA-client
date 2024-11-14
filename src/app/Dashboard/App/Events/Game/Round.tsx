@@ -35,7 +35,9 @@ export default function Round({ onQuizEnded }: Props) {
     trivia: (
       <Trivia data={quiz.rounds[round]} onRoundEnded={() => setEnded(true)} />
     ),
-    dealers_choice: <Dealers />,
+    dealers_choice: (
+      <Dealers data={quiz.rounds[round]} onRoundEnded={() => setEnded(true)} />
+    ),
   }
 
   const startTimer = () => {

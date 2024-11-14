@@ -2,12 +2,12 @@ import { useState } from 'react'
 import Answer from './Answer'
 import Question from './Question'
 
-type Props = {
+export type RoundProps = {
   data: Round
   onRoundEnded: () => void
 }
 
-export default function Trivia({ data, onRoundEnded }: Props) {
+export default function Trivia({ data, onRoundEnded }: RoundProps) {
   const [activeQuestionIndex, setactiveQuestionIndex] = useState<number>(0)
   const [finishedQuestion, setFinishedQuestion] = useState<boolean>(false)
   const [revealAnswer, setRevealAnswer] = useState<boolean>(false)
