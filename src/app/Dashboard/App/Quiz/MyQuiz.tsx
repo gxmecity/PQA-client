@@ -1,12 +1,24 @@
 import AppButton from '@/components/AppButton'
 import { AppSelect, SelectOptionType } from '@/components/AppSelect'
+import EmptyState from '@/components/EmptyState'
+import ErrorMessage from '@/components/ErrorMessage'
 import QuizItem from '@/components/QuizItem'
 import { Label } from '@/components/ui/label'
-import { quizzes } from '@/data'
+import { useGetUserCreatedQuizQuery } from '@/services/quiz'
 import { StarFilledIcon } from '@radix-ui/react-icons'
-import { Plus } from 'lucide-react'
+import { Dices, Plus } from 'lucide-react'
+import { useNavigate } from 'react-router-dom'
 
 export function Component() {
+  const {
+    data = [],
+    isLoading,
+    isError,
+    error,
+  } = useGetUserCreatedQuizQuery(undefined)
+
+  const navigate = useNavigate()
+
   const sortOptions: SelectOptionType[] = [
     {
       name: 'Date modified',
@@ -34,6 +46,7 @@ export function Component() {
           classname=' flex sm:w-full'
           text='New Quiz'
           icon={<Plus />}
+          onClick={() => navigate('../create-quiz')}
         />
         <AppButton
           classname=' flex sm:w-full'
@@ -49,13 +62,41 @@ export function Component() {
           defaultValue='updatedAt'
         />
       </div>
-      <div>
-        <Label className=' my-6 block'>My Quizes (08)</Label>
-        <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
-          {quizzes.map((quiz) => (
-            <QuizItem key={quiz._id} data={quiz} />
-          ))}
-        </div>
+      <div className=' flex-auto'>
+        <>
+          {isLoading ? (
+            <></>
+          ) : (
+            <>
+              {isError ? (
+                <ErrorMessage
+                  title='Something went wrong'
+                  variant='destructive'
+                  description=" Sorry we're having issues fetching your quiz list"
+                />
+              ) : (
+                <>
+                  {data.length ? (
+                    <>
+                      <Label className=' my-6 block'>My Quizes (08)</Label>
+                      <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
+                        {data.map((quiz) => (
+                          <QuizItem key={quiz._id} data={quiz} />
+                        ))}
+                      </div>
+                    </>
+                  ) : (
+                    <EmptyState
+                      title='No Quiz Added'
+                      icon={<Dices size={40} className='text-primary' />}
+                      description='Create new quiz to get started'
+                    />
+                  )}
+                </>
+              )}
+            </>
+          )}
+        </>
       </div>
     </div>
   )

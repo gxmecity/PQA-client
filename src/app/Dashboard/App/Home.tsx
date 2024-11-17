@@ -1,12 +1,15 @@
 import DashboardSummary from '@/components/DashboardSummary'
 import DashboardTile from '@/components/DashboardTile'
 import EmptyState from '@/components/EmptyState'
+import { useAppSelector } from '@/redux/store'
 import { CalendarCheck, CalendarX, Dices, Layers2, Users } from 'lucide-react'
 
 export function Component() {
+  const { user } = useAppSelector((state) => state.auth)
+
   return (
     <section className=' dashboard_section'>
-      <h1 className=' dashboard_header'>Welcome, Azubuike Kizito</h1>
+      <h1 className=' dashboard_header'>Welcome, {user?.fullname}</h1>
       <div className='grid grid-cols-4 gap-4 md:grid-cols-2 sm:flex sm:flex-col'>
         <DashboardTile
           title='Total Games'

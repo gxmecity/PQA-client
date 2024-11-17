@@ -6,6 +6,15 @@ export const apiSlice = createApi({
   baseQuery: axiosBaseQuery({
     baseUrl: '/api',
   }),
-  tagTypes: [],
+  tagTypes: [
+    'Quiz',
+    'Events',
+    'Dashboard',
+    'Teams',
+    'Series',
+    'Quiz-Details',
+    'Event-Details',
+    'Series-Details',
+  ],
   endpoints: () => ({}),
 })

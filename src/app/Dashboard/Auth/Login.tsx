@@ -5,12 +5,24 @@ import { Form } from '@/components/ui/form'
 import FormInput from '@/components/FormInput'
 import AppButton from '@/components/AppButton'
 import { ModeToggle } from '@/components/ToggleTheme'
-import { useLoginUserMutation } from '@/services/auth'
+import {
+  useLoginUserMutation,
+  useRetrieveUserSessionQuery,
+} from '@/services/auth'
 import { toast } from 'sonner'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, Navigate, useNavigate } from 'react-router-dom'
 import { errorResponseHandler } from '@/lib/utils'
+import { useAppSelector } from '@/redux/store'
 
 export function Component() {
+  const { user } = useAppSelector((state) => state.auth)
+  const { isLoading: retrievingSession } = useRetrieveUserSessionQuery(
+    undefined,
+    {
+      skip: user !== undefined,
+    }
+  )
+
   const [loginUser, { isLoading }] = useLoginUserMutation()
   const navigate = useNavigate()
 
@@ -32,6 +44,10 @@ export function Component() {
       errorResponseHandler(error)
     }
   }
+
+  if (retrievingSession) return <>Loading...</>
+
+  if (user) return <Navigate to='/dashboard' />
 
   return (
     <div className=' grid grid-cols-2 h-full md:flex md:justify-center'>

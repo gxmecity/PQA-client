@@ -24,6 +24,10 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       transformResponse: (res: SuccessHttpResponse<Auth>) => res.data,
+      transformErrorResponse: (err: any) => {
+        localStorage.removeItem('pqa_user_token')
+        return err
+      },
     }),
   }),
 })

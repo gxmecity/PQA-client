@@ -1,17 +1,15 @@
-import { StarFilledIcon } from '@radix-ui/react-icons'
-import { Clock, Pencil, Play, Star } from 'lucide-react'
+import { Clock, Pencil, Play } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
 import AppButton from './AppButton'
+import { Button } from './ui/button'
 import {
   Card,
   CardContent,
   CardDescription,
-  CardFooter,
   CardHeader,
   CardTitle,
 } from './ui/card'
 import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { Button } from './ui/button'
 
 interface Prop {
   data: Quiz
@@ -25,7 +23,7 @@ const QuizItem = ({ data }: Prop) => {
       <CardHeader>
         <CardTitle className='mb-2'>{data.title}</CardTitle>
         <CardDescription className=' text-xs italic'>
-          Private Quiz by KIzito Azubuike
+          {data.publish ? 'Public' : 'Private'} Quiz by {data.creator.fullname}
         </CardDescription>
         <CardDescription className=' text-xs italic'>
           This quiz has {data.rounds.length} rounds

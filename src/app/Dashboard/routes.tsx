@@ -4,7 +4,7 @@ import { Navigate, RouteObject } from 'react-router-dom'
 export const dashboardRoutes: RouteObject[] = [
   {
     path: '',
-    element: <Navigate to='/dashboard' />,
+    element: <Navigate to='/login' />,
   },
   {
     path: '/login',

@@ -10,21 +10,37 @@ import {
   CardTitle,
 } from '@/components/ui/card'
 import { Form } from '@/components/ui/form'
+import { errorResponseHandler } from '@/lib/utils'
 import { createQuizSchema } from '@/schemas'
+import { useCreateNewQuizMutation } from '@/services/quiz'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { SubmitHandler, useForm } from 'react-hook-form'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
 
 export function Component() {
+  const navigate = useNavigate()
+
+  const [createNewQuiz, { isLoading }] = useCreateNewQuizMutation()
+
   const form = useForm({
     resolver: zodResolver(createQuizSchema),
     defaultValues: {
       title: '',
       description: '',
+      publish: false,
     },
   })
 
-  const handleSubmit: SubmitHandler<any> = (data) => {
-    console.log(data)
+  const handleSubmit: SubmitHandler<any> = async (data) => {
+    try {
+      const response = await createNewQuiz(data).unwrap()
+
+      toast.success('Quiz Created')
+      navigate(`../quiz/${response._id}`)
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
   }
 
   return (
@@ -53,7 +69,12 @@ export function Component() {
               />
             </CardContent>
             <CardFooter className='flex flex-col'>
-              <AppButton text='Create' classname=' w-full' type='submit' />
+              <AppButton
+                text='Create'
+                classname=' w-full'
+                type='submit'
+                loading={isLoading}
+              />
             </CardFooter>
           </form>
         </Form>

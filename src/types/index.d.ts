@@ -50,7 +50,7 @@ declare interface Quiz {
   _id: string
   _updatedAt: string
   description?: string
-  creator: Reference
+  creator: User
   _createdAt: string
   publish: boolean
   _rev: string
@@ -59,45 +59,30 @@ declare interface Quiz {
   rounds: Round[]
 }
 
-declare interface Round {
-  round_name: string
-  round_type: string
-  _type: string
-  questions: QuestionElement[]
-  _key: string
-  category: string
-  timer: number
-}
-
-declare interface Reference {
-  _ref: string
-  _type: string
-}
-
-declare interface QuestionElement {
-  _type: string
-  _key: string
-  answer: Answer
-  question: QuestionQuestion
-}
-
 declare interface Answer {
   answer_text: string
   is_blackbox?: boolean
 }
 
-declare interface QuestionQuestion {
+declare interface Question {
   question_text: string
-  number: number
   question_type: string
-  question_image?: Asset
+  question_media?: {
+    type: string
+    url: string
+  }
   multi_choice_options?: string[]
-  question_video?: Asset
-  standalone_asset: boolean
-  asset_type: string
+  standalone_media: boolean
 }
 
-declare interface Asset {
-  _type: string
-  asset: Reference
+declare interface QuizQuestion {
+  question: Question
+  answer: Answer
+}
+
+declare interface Round {
+  round_name: string
+  round_type: string
+  questions: QuizQuestion[]
+  timer: number
 }

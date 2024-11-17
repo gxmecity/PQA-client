@@ -18,7 +18,7 @@ axiosInstance.interceptors.request.use(
     const access_token = localStorage.getItem('pqa_user_token')
 
     if (access_token && config.headers) {
-      config.headers.Authorization = `bearer ${access_token}`
+      config.headers.Authorization = `Bearer ${access_token}`
     }
     return config
   },

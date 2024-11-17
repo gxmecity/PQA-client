@@ -68,6 +68,7 @@ export const createQuizSchema = z.object({
   description: z.string({
     required_error: 'Password is required',
   }),
+  publish: z.boolean(),
 })
 
 const ReferenceSchema = z.object({
