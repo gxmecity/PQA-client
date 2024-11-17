@@ -11,7 +11,9 @@ import {
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
+  SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet'
 import { cn } from '@/lib/utils'
@@ -25,6 +27,7 @@ import {
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible'
+import { Button } from './ui/button'
 
 interface ListItem {
   children: any
@@ -129,12 +132,17 @@ ListItem.displayName = 'ListItem'
 const MobileNav = () => {
   return (
     <Sheet>
-      <SheetTrigger className=' hidden sm:block'>
-        <AppButton icon={<HamburgerMenuIcon />} variant='outline' />
+      <SheetTrigger className=' hidden sm:flex' asChild>
+        <span className=' cursor-pointer border rounded-md  border-text-forground items-center justify-center w-8 h-8'>
+          <HamburgerMenuIcon />
+        </span>
       </SheetTrigger>
       <SheetContent className=' max-w-[450px]' side='left'>
         <SheetHeader>
-          <p>The Pub quiz</p>
+          <SheetTitle>The Pub quiz</SheetTitle>
+          <SheetDescription>
+            On-the-go quiz app to challenge friends and test your knowledge.
+          </SheetDescription>
         </SheetHeader>
         <div className=' flex flex-col justify-start h-full pb-10'>
           <NavigationMenuList className=' flex flex-col pt-8 space-y-5'>

@@ -5,8 +5,15 @@ import { Form } from '@/components/ui/form'
 import FormInput from '@/components/FormInput'
 import AppButton from '@/components/AppButton'
 import { ModeToggle } from '@/components/ToggleTheme'
+import { useLoginUserMutation } from '@/services/auth'
+import { toast } from 'sonner'
+import { Link, useNavigate } from 'react-router-dom'
+import { errorResponseHandler } from '@/lib/utils'
 
 export function Component() {
+  const [loginUser, { isLoading }] = useLoginUserMutation()
+  const navigate = useNavigate()
+
   const form = useForm({
     resolver: zodResolver(loginSchema),
     defaultValues: {
@@ -15,8 +22,15 @@ export function Component() {
     },
   })
 
-  const loginUser: SubmitHandler<LoginData> = (data) => {
-    console.log(data)
+  const submitUserLogin: SubmitHandler<LoginData> = async (data) => {
+    try {
+      await loginUser(data).unwrap()
+
+      toast.success('Login Successful')
+      navigate('/dashboard')
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
   }
 
   return (
@@ -35,7 +49,7 @@ export function Component() {
             <Form {...form}>
               <form
                 className='my-10 flex flex-col gap-5'
-                onSubmit={form.handleSubmit(loginUser)}>
+                onSubmit={form.handleSubmit(submitUserLogin)}>
                 <FormInput
                   type='text'
                   label='Email'
@@ -50,7 +64,18 @@ export function Component() {
                   name='password'
                   placeholder='Enter password'
                 />
-                <AppButton text='Sign in' type='submit' classname='h-12' />
+                <AppButton
+                  text='Sign in'
+                  type='submit'
+                  classname='h-12'
+                  loading={isLoading}
+                />
+                <p className='text-muted-foreground text-sm text-center'>
+                  Don't have an account?{' '}
+                  <Link to='/signup' className=' font-medium text-primary'>
+                    Sign up{' '}
+                  </Link>
+                </p>
               </form>
             </Form>
 

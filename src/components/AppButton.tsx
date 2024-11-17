@@ -1,5 +1,5 @@
 import { ReactNode } from 'react'
-import { Button, buttonVariants } from './ui/button'
+import { Button } from './ui/button'
 
 interface Props {
   text?: string
