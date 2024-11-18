@@ -2,13 +2,10 @@ import { UploadCloud, XIcon } from 'lucide-react'
 import { SelectOptionType } from './AppSelect'
 import FormCheckbox from './FormCheckbox'
 import FormInput from './FormInput'
-import FormSelect from './FormSelect'
-import { Input } from './ui/input'
-import { Label } from './ui/label'
 import FormRadio from './FormRadio'
+import FormSelect from './FormSelect'
 import UploadWidget from './UploadWidjet'
-import { useState } from 'react'
-import { handleDeleteAsset } from '@/cloudinary'
+import { Label } from './ui/label'
 
 interface Props {
   activeQuestionIndex: number | null
