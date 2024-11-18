@@ -78,6 +78,7 @@ declare interface Question {
 declare interface QuizQuestion {
   question: Question
   answer: Answer
+  _id: string
 }
 
 declare interface Round {
@@ -85,4 +86,5 @@ declare interface Round {
   round_type: string
   questions: QuizQuestion[]
   timer: number
+  _id: string
 }

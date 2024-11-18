@@ -11,6 +11,7 @@ import {
 export interface SelectOptionType {
   name: string
   value: string
+  description?: string
 }
 
 interface Props {

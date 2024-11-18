@@ -46,6 +46,35 @@ export const quizApiSlice = apiSlice.injectEndpoints({
       }),
       invalidatesTags: ['Quiz-Details', 'Quiz'],
     }),
+    addQuizRound: builder.mutation<Quiz, { id: string; data: Round }>({
+      query: ({ id, data }) => ({
+        url: `/my-quiz/${id}/round`,
+        method: 'POST',
+        data,
+      }),
+      transformResponse: (res: SuccessHttpResponse<Quiz>) => res.data,
+      invalidatesTags: ['Quiz-Details', 'Quiz'],
+    }),
+    updateQuizRoundDetails: builder.mutation<
+      Quiz,
+      { id: string; data: Round; round_id: string }
+    >({
+      query: ({ id, data, round_id }) => ({
+        url: `/my-quiz/${id}/round/${round_id}`,
+        method: 'PATCH',
+        data,
+      }),
+      transformResponse: (res: SuccessHttpResponse<Quiz>) => res.data,
+      invalidatesTags: ['Quiz-Details', 'Quiz'],
+    }),
+    deleteQuizRound: builder.mutation<Quiz, { id: string; round_id: string }>({
+      query: ({ id, round_id }) => ({
+        url: `/my-quiz/${id}/round/${round_id}`,
+        method: 'DELETE',
+      }),
+      transformResponse: (res: SuccessHttpResponse<Quiz>) => res.data,
+      invalidatesTags: ['Quiz-Details', 'Quiz'],
+    }),
   }),
 })
 
@@ -55,4 +84,7 @@ export const {
   useGetUserQuizDetailsQuery,
   useUpdateUserQuizDetailsMutation,
   useDeleteUserQuizMutation,
+  useAddQuizRoundMutation,
+  useUpdateQuizRoundDetailsMutation,
+  useDeleteQuizRoundMutation,
 } = quizApiSlice

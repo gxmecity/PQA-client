@@ -20,7 +20,7 @@ import {
 } from '@/services/quiz'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { AlignVerticalDistributeCenter, Plus } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
@@ -45,6 +45,9 @@ export default function EditQuizDetails({ quiz }: Props) {
   })
 
   const [rounds, setRounds] = useState<Round[]>(quiz.rounds ?? [])
+  const [activeEditRoundIndex, setActiveEditRoundIndex] = useState<
+    number | null
+  >(null)
 
   const handleUpdateQuiz: SubmitHandler<Partial<Quiz>> = async (data) => {
     console.log(data)
@@ -72,17 +75,20 @@ export default function EditQuizDetails({ quiz }: Props) {
   }
 
   const addNewRound = () => {
-    const newObj = {
+    const newObj: Round = {
       round_name: '',
       round_type: '',
-      _type: 'round',
-      _key: `round_key_${Date.now()}`,
       questions: [],
-      category: '',
       timer: 0,
+      _id: '',
     }
     setRounds((prev) => [...prev, newObj])
+    setActiveEditRoundIndex(rounds.length)
   }
+
+  useEffect(() => {
+    setRounds(quiz.rounds)
+  }, [quiz])
 
   return (
     <section className='dashboard_section overflow-x-hidden'>
@@ -150,7 +156,14 @@ export default function EditQuizDetails({ quiz }: Props) {
             ) : (
               <>
                 {rounds.map((round, index) => (
-                  <RoundItem data={round} key={index} />
+                  <RoundItem
+                    data={round}
+                    key={index}
+                    quiz_id={quiz._id}
+                    activeIndex={activeEditRoundIndex}
+                    setActiveIndex={setActiveEditRoundIndex}
+                    index={index}
+                  />
                 ))}
               </>
             )}

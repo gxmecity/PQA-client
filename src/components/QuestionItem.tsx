@@ -6,6 +6,9 @@ import FormSelect from './FormSelect'
 import { Input } from './ui/input'
 import { Label } from './ui/label'
 import FormRadio from './FormRadio'
+import UploadWidget from './UploadWidjet'
+import { useState } from 'react'
+import { handleDeleteAsset } from '@/cloudinary'
 
 interface Props {
   activeQuestionIndex: number | null
@@ -34,17 +37,6 @@ const questionTypes: SelectOptionType[] = [
   },
 ]
 
-const assetOptios: SelectOptionType[] = [
-  {
-    name: 'Video',
-    value: 'video',
-  },
-  {
-    name: 'Image',
-    value: 'image',
-  },
-]
-
 const truthyOptions: SelectOptionType[] = [
   {
     name: 'True',
@@ -67,7 +59,31 @@ const QuestionItem = ({
     form.getValues('questions')[index]['question']['question_text']
   const answer = form.getValues('questions')[index]['answer']['answer_text']
   const type = form.getValues('questions')[index]['question']['question_type']
-  const assetType = form.getValues('questions')[index]['question']['asset_type']
+  const assetType =
+    form.getValues('questions')[index]['question']['question_media']['type']
+  const assetUrl =
+    form.getValues('questions')[index]['question']['question_media']['url']
+
+  function handleOnUpload(error: any, result: any, widget: any) {
+    if (error) return
+
+    form.setValue(
+      `questions[${index}].question.question_media.url`,
+      result?.info?.secure_url
+    )
+    form.setValue(
+      `questions[${index}].question.question_media.type`,
+      result?.info?.resource_type
+    )
+    widget.close({
+      quiet: true,
+    })
+  }
+
+  const deleteUploadedAsset = () => {
+    form.setValue(`questions[${index}].question.question_media.url`, '')
+    form.setValue(`questions[${index}].question.question_media.type`, '')
+  }
 
   const setAnswer = (arg: string) => {
     if (arg) form.setValue(`questions[${index}].answer.answer_text`, arg)
@@ -98,27 +114,44 @@ const QuestionItem = ({
               options={questionTypes}
             />
           </div>
+          <Label className=' mb-3 block'>Question Attachment</Label>
           <div className=' grid grid-cols-3 gap-4 sm:grid-cols-1'>
-            <FormSelect
-              name={`questions[${index}].question.asset_type`}
-              form={form}
-              label='Attachment Type'
-              options={assetOptios}
-            />
             <div className=' flex items-center justify-center gap-5'>
-              {assetType === 'image' && (
-                <Label className=' flex items-center justify-center h-16 py-2 gap-3 border border-dashed border-primary rounded-md w-full cursor-pointer'>
-                  <UploadCloud className='text-primary h-full ' size={25} />
-                  <p className=' text-xs'>Upload Image</p>
-                  <Input type='file' accept='image/*' className='hidden' />
-                </Label>
-              )}
-              {assetType === 'video' && (
-                <Label className=' flex items-center justify-center h-16 py-2 gap-3 border border-dashed border-primary rounded-md w-full cursor-pointer'>
-                  <UploadCloud className='text-primary h-full ' size={25} />
-                  <p className=' text-xs'>Upload Video</p>
-                  <Input type='file' accept='video/*' className='hidden' />
-                </Label>
+              {assetType ? (
+                <div className=' relative h-full w-full'>
+                  <button
+                    type='button'
+                    onClick={deleteUploadedAsset}
+                    className=' bg-black text-white top-2 right-2 w-5 h-5 rounded-full absolute flex items-center justify-center'>
+                    <XIcon size={15} />
+                  </button>
+                  {assetType === 'image' && assetUrl && (
+                    <img src={assetUrl} alt='Image' />
+                  )}
+                  {assetType === 'video' && assetUrl && (
+                    <video>
+                      <source src={assetUrl} type='video/mp4' />
+                      Your browser dows not support video
+                    </video>
+                  )}
+                </div>
+              ) : (
+                <UploadWidget onUpload={handleOnUpload}>
+                  {({ open }) => {
+                    return (
+                      <button
+                        type='button'
+                        className=' flex items-center text-xs justify-center h-16 py-2 gap-3 border border-dashed border-primary rounded-md w-full cursor-pointer'
+                        onClick={() => open()}>
+                        <UploadCloud
+                          className='text-primary h-full '
+                          size={25}
+                        />
+                        Upload file
+                      </button>
+                    )
+                  }}
+                </UploadWidget>
               )}
             </div>
             <FormCheckbox
@@ -126,6 +159,12 @@ const QuestionItem = ({
               label='Standalone attachment'
               description='Show only attachment with no question text'
               name={`questions[${index}].question.standalone_asset`}
+            />
+            <FormCheckbox
+              form={form}
+              label='Has Blackbox'
+              description='Special questions for gifting player prices for correct answer'
+              name={`questions[${index}].answer.is_blackbox`}
             />
           </div>
           {type === 'multiple_choice' && (

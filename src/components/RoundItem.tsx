@@ -11,7 +11,6 @@ import {
 import AppButton from './AppButton'
 import { SelectOptionType } from './AppSelect'
 import FormInput from './FormInput'
-import FormSelect from './FormSelect'
 import QuestionItem from './QuestionItem'
 import {
   Card,
@@ -22,55 +21,51 @@ import {
   CardTitle,
 } from './ui/card'
 import { Form } from './ui/form'
+import FormRadio from './FormRadio'
+import {
+  useAddQuizRoundMutation,
+  useDeleteQuizRoundMutation,
+  useUpdateQuizRoundDetailsMutation,
+} from '@/services/quiz'
+import { errorResponseHandler } from '@/lib/utils'
+import { toast } from 'sonner'
 
 const roundTypes: SelectOptionType[] = [
   {
     name: 'Trivia',
     value: 'trivia',
+    description:
+      'Regular quiz round with questions asked in quick succession. All feedback is shown at the end of the round',
   },
   {
     name: "Dealer's Choice",
     value: 'dealers_choice',
-  },
-]
-
-const roundCategoryOptions: SelectOptionType[] = [
-  {
-    name: 'Arts & Culture',
-    value: 'Arts & Culture',
-  },
-  {
-    name: 'Entertainment',
-    value: 'Entertainment',
-  },
-  {
-    name: 'History',
-    value: 'History',
-  },
-  {
-    name: 'Nature & Geography',
-    value: 'Nature & Geography',
-  },
-  {
-    name: 'Science & Technology',
-    value: 'Science & Technology',
-  },
-  {
-    name: 'Sports & Leisure',
-    value: 'Sports & Leisure',
-  },
-  {
-    name: 'General Knowledge',
-    value: 'General Knowledge',
+    description:
+      'Players take turn picking a question number. Answers reveal after question timer elapsed.',
   },
 ]
 
 interface Props {
   data: Round
+  quiz_id: string
+  activeIndex: number | null
+  index: number
+  setActiveIndex: (arg: number | null) => void
 }
 
-const RoundItem = ({ data }: Props) => {
-  const [edit, setEdit] = useState(data._key ? true : false)
+const RoundItem = ({
+  data,
+  quiz_id,
+  activeIndex,
+  index,
+  setActiveIndex,
+}: Props) => {
+  const [addQuizRound, { isLoading: adding }] = useAddQuizRoundMutation()
+  const [updateQuizRound, { isLoading: updating }] =
+    useUpdateQuizRoundDetailsMutation()
+  const [deleteQuizRound, { isLoading: deleting }] =
+    useDeleteQuizRoundMutation()
+
   const [activeQuestionIndex, setactiveQuestionIndex] = useState<number | null>(
     null
   )
@@ -80,10 +75,8 @@ const RoundItem = ({ data }: Props) => {
     defaultValues: {
       round_name: data.round_name,
       round_type: data.round_type,
-      _type: 'game_round',
       questions: data.questions,
-      category: data.category,
-      timer: data.timer,
+      timer: data.timer.toString(),
     },
   })
 
@@ -96,15 +89,55 @@ const RoundItem = ({ data }: Props) => {
     name: 'questions',
   })
 
-  const onSubmit: SubmitHandler<any> = (data) => {
-    console.log(data)
+  const onSubmit: SubmitHandler<any> = async (roundData) => {
+    try {
+      if (data._id) {
+        await updateQuizRound({
+          id: quiz_id,
+          data: roundData,
+          round_id: data._id,
+        }).unwrap()
+        toast.success('Round Updated', {
+          description: 'Quiz round updated successfully',
+        })
+      } else {
+        await addQuizRound({
+          id: quiz_id,
+          data: roundData,
+        }).unwrap()
+
+        toast.success('Round Added', {
+          description: 'New round added to quiz successfully',
+        })
+      }
+      setActiveIndex(null)
+      setactiveQuestionIndex(null)
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
+  }
+
+  const handleDeleteRound = async () => {
+    //TODO: Handle remove rounds without ID
+
+    try {
+      await deleteQuizRound({
+        id: quiz_id,
+        round_id: data._id,
+      }).unwrap()
+      toast.success('Round Deleted', {
+        description: 'Quiz round deleted successfully',
+      })
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
   }
 
   form.watch()
 
   return (
-    <Card className=''>
-      {edit ? (
+    <Card>
+      {activeIndex === index ? (
         <>
           <CardHeader>
             <CardTitle>Edit Round Details</CardTitle>
@@ -113,31 +146,32 @@ const RoundItem = ({ data }: Props) => {
             <Form {...form}>
               <form onSubmit={form.handleSubmit(onSubmit)} className=' '>
                 <CardContent className='flex flex-col gap-5'>
-                  <div className=' grid grid-cols-4 gap-4 md:grid-cols-2 sm:grid-cols-1'>
-                    <FormInput
-                      name='round_name'
-                      form={form}
-                      type='text'
-                      label='Round Title'
-                    />
-                    <FormSelect
-                      name='round_type'
-                      form={form}
-                      label='Round Type'
-                      options={roundTypes}
-                    />
-                    <FormSelect
-                      name='category'
-                      form={form}
-                      label='Category'
-                      options={roundCategoryOptions}
-                    />
-                    <FormInput
-                      name='timer'
-                      form={form}
-                      type='number'
-                      label='Time per question (seconds)'
-                    />
+                  <div className=' flex items-center gap-4 flex-wrap'>
+                    <div className=' basis-1/3 sm:basis-full '>
+                      <FormInput
+                        name='round_name'
+                        form={form}
+                        type='text'
+                        label='Round Title'
+                      />
+                    </div>
+                    <div className=' basis-1/2 sm:basis-full'>
+                      <FormRadio
+                        form={form}
+                        options={roundTypes}
+                        label='Round Type'
+                        name='round_type'
+                      />
+                    </div>
+
+                    <div className='flex-auto'>
+                      <FormInput
+                        name='timer'
+                        form={form}
+                        type='number'
+                        label='Time per question (seconds)'
+                      />
+                    </div>
                   </div>
                   <div className=' flex flex-col gap-3'>
                     {questionsField.map((question, index) => (
@@ -159,16 +193,17 @@ const RoundItem = ({ data }: Props) => {
                       classname='border-primary text-primary'
                       onClick={() => {
                         addQuestion({
-                          _type: 'question',
-                          _key: '',
-                          answer: { answer_text: '' },
+                          _id: '',
+                          answer: { answer_text: '', is_blackbox: false },
                           question: {
                             question_text: '',
-                            number: questionsField.length + 1,
                             question_type: '',
                             multi_choice_options: ['', '', '', ''],
-                            standalone_asset: false,
-                            asset_type: 'image',
+                            standalone_media: false,
+                            question_media: {
+                              url: '',
+                              type: '',
+                            },
                           },
                         })
 
@@ -186,10 +221,19 @@ const RoundItem = ({ data }: Props) => {
                   <div className=' flex gap-3 sm:flex-col'>
                     <AppButton
                       text='Save'
-                      onClick={() => setEdit(false)}
                       icon={<Save />}
+                      type='submit'
+                      loading={adding || updating}
                     />
-                    <AppButton variant='outline' text='Cancel' />
+                    <AppButton
+                      variant='outline'
+                      text='Cancel'
+                      onClick={() => {
+                        form.reset()
+                        setActiveIndex(null)
+                        setactiveQuestionIndex(null)
+                      }}
+                    />
                   </div>
                 </CardFooter>
               </form>
@@ -198,12 +242,11 @@ const RoundItem = ({ data }: Props) => {
         </>
       ) : (
         <>
-          {' '}
           <CardHeader>
             <CardTitle className='mb-2'>{data.round_name}</CardTitle>
             <CardDescription className=' text-xs italic flex gap-2'>
               <span className=' border-r border-r-border pr-2'>
-                Questions: {data.questions.length}
+                Questions: {questionsField.length}
               </span>
               <span className=' border-r border-r-border pr-2'>
                 Questions mode: {data.round_type}
@@ -214,10 +257,16 @@ const RoundItem = ({ data }: Props) => {
             <div className=' flex gap-3 sm:flex-col'>
               <AppButton
                 text='Edit'
-                onClick={() => setEdit(true)}
+                onClick={() => setActiveIndex(index)}
                 icon={<Pencil />}
               />
-              <AppButton variant='destructive' text='Remove' icon={<Trash />} />
+              <AppButton
+                variant='destructive'
+                text='Remove'
+                icon={<Trash />}
+                onClick={handleDeleteRound}
+                loading={deleting}
+              />
             </div>
           </CardContent>
         </>

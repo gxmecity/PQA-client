@@ -1,5 +1,6 @@
 import {
   FormControl,
+  FormDescription,
   FormField,
   FormItem,
   FormLabel,
@@ -36,17 +37,20 @@ const FormRadio = ({
             <RadioGroup
               onValueChange={field.onChange}
               defaultValue={field.value}
-              className='flex gap-5 py-4 space-y-1'>
+              className='flex gap-3 py-4 space-y-1 items-center'>
               {options.map((option) => (
-                <FormItem
-                  className='flex items-center space-x-3 space-y-0 cursor-pointer'
-                  key={option.value}>
-                  <FormControl>
-                    <RadioGroupItem value={option.value} />
-                  </FormControl>
-                  <FormLabel className='font-normal cursor-pointer'>
-                    {option.name}
-                  </FormLabel>
+                <FormItem key={option.value} className='cursor-pointer'>
+                  <span className='flex items-center space-x-3 space-y-0 cursor-pointer'>
+                    <FormControl>
+                      <RadioGroupItem value={option.value} />
+                    </FormControl>
+                    <FormLabel className='font-normal cursor-pointer'>
+                      {option.name}
+                    </FormLabel>
+                  </span>
+                  {option.description && (
+                    <FormDescription>{option.description}</FormDescription>
+                  )}
                 </FormItem>
               ))}
             </RadioGroup>

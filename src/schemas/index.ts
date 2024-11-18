@@ -68,52 +68,38 @@ export const createQuizSchema = z.object({
   description: z.string({
     required_error: 'Password is required',
   }),
-  publish: z.boolean(),
-})
-
-const ReferenceSchema = z.object({
-  _ref: z.string(),
-  _type: z.string(),
-})
-
-const AssetSchema = z.object({
-  _type: z.string(),
-  asset: ReferenceSchema,
+  publish: z.boolean().default(false),
 })
 
 const AnswerSchema = z.object({
   answer_text: z.string(),
+  is_blackbox: z.boolean().default(false),
 })
 
 const QuestionQuestionSchema = z.object({
   question_text: z.string(),
-  number: z.number(),
   question_type: z.string(),
-  question_image: AssetSchema.optional(),
+  question_media: z
+    .object({
+      url: z.string(),
+      type: z.string(),
+    })
+    .optional(),
   multi_choice_options: z.array(z.string()).optional(),
-  question_video: AssetSchema.optional(),
   standalone_asset: z.boolean().default(false),
-  asset_type: z.string().default('image'),
 })
 
 export const QuestionElementSchema = z.object({
-  _type: z.string(),
-  _key: z.string().optional(),
   answer: AnswerSchema,
   question: QuestionQuestionSchema,
 })
 
 export const RoundSchema = z.object({
-  round_name: z.string(),
-  round_type: z.string(),
-  _type: z.string(),
+  round_name: z.string().min(1, 'Round name is required'),
+  round_type: z.string().min(5, 'Round type is required'),
   questions: z.array(QuestionElementSchema),
-  _key: z.string().optional(),
-  category: z.string(),
-  timer: z.number(),
+  timer: z.string(),
 })
-
-export const updateQuizSchema = z.object({})
 
 // Event Schema
 export const createEventSchema = z.object({
@@ -125,6 +111,6 @@ export const createEventSchema = z.object({
   description: z.string({
     required_error: 'Password is required',
   }),
-  game: ReferenceSchema,
+  game: z.string(),
   scheduled_date: z.string(),
 })
