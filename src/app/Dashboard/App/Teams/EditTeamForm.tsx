@@ -4,11 +4,8 @@ import UploadWidget from '@/components/UploadWidjet'
 import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { errorResponseHandler } from '@/lib/utils'
-import { editTeamSchema, registerTeamSchema } from '@/schemas'
-import {
-  useRegisterNewTeamMutation,
-  useUpdateTeamDetailsMutation,
-} from '@/services/auth'
+import { editTeamSchema } from '@/schemas'
+import { useUpdateTeamDetailsMutation } from '@/services/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircle, PlusCircle, UploadCloud } from 'lucide-react'
 import { useEffect } from 'react'
