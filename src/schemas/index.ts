@@ -111,6 +111,16 @@ export const registerTeamSchema = z.object({
   ),
 })
 
+export const editTeamSchema = z.object({
+  name: z.string().min(1, 'Team name is required'),
+  passphrase: z.string(),
+  team_members: z.array(
+    z.object({
+      name: z.string().min(1, 'Enter a valid name'),
+    })
+  ),
+})
+
 // Event Schema
 export const createEventSchema = z.object({
   title: z

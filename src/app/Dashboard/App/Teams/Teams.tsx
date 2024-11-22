@@ -3,7 +3,7 @@ import AppButton from '@/components/AppButton'
 import AppDialog from '@/components/AppDialog'
 import EmptyState from '@/components/EmptyState'
 import { Input } from '@/components/ui/input'
-import { cn } from '@/lib/utils'
+import { cn, copyTextToClipboard } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
 import { useGetUserRegisteredTeamsQuery } from '@/services/auth'
 import { Copy, Search, Share, Users } from 'lucide-react'
@@ -96,6 +96,7 @@ export function Component() {
             text='Copy Url'
             icon={<Copy />}
             classname=' h-12 font-bold w-full max-w-[300px] text-lg'
+            onClick={() => copyTextToClipboard(userUrl)}
           />
         </div>
       </AppDialog>

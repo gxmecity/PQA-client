@@ -4,27 +4,34 @@ import UploadWidget from '@/components/UploadWidjet'
 import { Form } from '@/components/ui/form'
 import { Label } from '@/components/ui/label'
 import { errorResponseHandler } from '@/lib/utils'
-import { useAppSelector } from '@/redux/store'
-import { registerTeamSchema } from '@/schemas'
-import { useRegisterNewTeamMutation } from '@/services/auth'
+import { editTeamSchema, registerTeamSchema } from '@/schemas'
+import {
+  useRegisterNewTeamMutation,
+  useUpdateTeamDetailsMutation,
+} from '@/services/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircle, PlusCircle, UploadCloud } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect } from 'react'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 
-export function Component() {
-  const { user } = useAppSelector((state) => state.auth)
+interface Props {
+  team: Team
+}
 
-  const [registerTeam, { isLoading }] = useRegisterNewTeamMutation()
+export default function EditTeam({ team }: Props) {
+  const [upddateTeam, { isLoading }] = useUpdateTeamDetailsMutation()
 
   const form = useForm({
-    resolver: zodResolver(registerTeamSchema),
+    resolver: zodResolver(editTeamSchema),
     defaultValues: {
-      name: '',
-      sigil: '',
+      name: team?.name ?? '',
+      sigil: team?.sigil ?? '',
       passphrase: '',
-      team_members: [{ name: '' }, { name: '' }],
+      team_members: team?.team_members.map((member) => ({ name: member })) ?? [
+        { name: '' },
+        { name: '' },
+      ],
     },
   })
 
@@ -39,7 +46,9 @@ export function Component() {
 
   function handleOnUpload(error: any, result: any, widget: any) {
     if (error) return
+
     form.setValue('sigil', result?.info?.secure_url)
+
     widget.close({
       quiet: true,
     })
@@ -49,28 +58,43 @@ export function Component() {
   form.watch()
 
   const onSubmit: SubmitHandler<RegisterTeamData> = async (data) => {
-    if (!user) return
-
     const teamMembers = data.team_members.map((member) => member.name)
 
     const teamData = new FormData()
 
     if (image) teamData.append('sigil', image)
     teamData.append('name', data.name)
-    teamData.append('passphrase', data.passphrase)
+    if (data.passphrase) teamData.append('passphrase', data.passphrase)
     teamData.append('team_members', JSON.stringify(teamMembers))
-    teamData.append('quiz_master', user._id)
 
     try {
-      const response = await registerTeam(teamData).unwrap()
-      console.log(response)
+      await upddateTeam({
+        id: team._id,
+        data: teamData,
+      }).unwrap()
 
       form.reset()
-      toast.success('Team Registered Successfully')
+      toast.success('Team Updated Successfully')
     } catch (error: any) {
       errorResponseHandler(error)
     }
   }
+
+  const resetForm = () => {
+    form.reset({
+      name: team?.name ?? '',
+      sigil: team?.sigil ?? '',
+      passphrase: '',
+      team_members: team?.team_members.map((member) => ({ name: member })) ?? [
+        { name: '' },
+        { name: '' },
+      ],
+    })
+  }
+
+  useEffect(() => {
+    resetForm()
+  }, [team])
 
   return (
     <Form {...form}>
@@ -166,9 +190,9 @@ export function Component() {
             type='button'
             variant='outline'
             text='Cancel'
-            onClick={form.reset}
+            onClick={resetForm}
           />
-          <AppButton type='submit' text='Register Team' loading={isLoading} />
+          <AppButton type='submit' text='Update Team' loading={isLoading} />
         </div>
       </form>
     </Form>

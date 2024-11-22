@@ -57,3 +57,8 @@ export const generateQuizEntryCode = () => {
   const part2 = Math.floor(1000 + Math.random() * 9000)
   return `${part1}${part2}`
 }
+
+export const copyTextToClipboard = (text: string) => {
+  navigator.clipboard.writeText(text)
+  toast.success('Copied to clipboard')
+}

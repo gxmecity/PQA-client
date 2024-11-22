@@ -43,7 +43,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         method: 'GET',
       }),
       transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
-      providesTags: ['Teams'],
+      providesTags: ['Team-Details'],
     }),
     registerNewTeam: builder.mutation<Team, any>({
       query: (data) => ({
@@ -68,6 +68,8 @@ export const authApiSlice = apiSlice.injectEndpoints({
         },
         formData: true,
       }),
+      transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
+      invalidatesTags: ['Team-Details', 'Teams'],
     }),
   }),
 })
