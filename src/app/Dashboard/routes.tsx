@@ -40,12 +40,29 @@ export const dashboardRoutes: RouteObject[] = [
         path: 'create-quiz',
         lazy: () => import('./App/Quiz/Create'),
       },
+      {
+        path: 'teams',
+        lazy: () => import('./App/Teams/Teams'),
+        children: [
+          {
+            path: '',
+            lazy: () => import('./App/Teams/RegisterTeam'),
+          },
+          {
+            path: ':id',
+            lazy: () => import('./App/Teams/EditTeam'),
+          },
+        ],
+      },
     ],
   },
   {
     path: '/broadcast/:id',
     lazy: () => import('./App/Events/Broadcast'),
     errorElement: <ErrorPage />,
+  },
+  {
+    path: '/play',
   },
   {
     path: '*',

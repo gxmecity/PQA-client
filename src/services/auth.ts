@@ -29,6 +29,46 @@ export const authApiSlice = apiSlice.injectEndpoints({
         return err
       },
     }),
+    getUserRegisteredTeams: builder.query<Team[], string>({
+      query: (id) => ({
+        url: `/teams/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<Team[]>) => res.data,
+      providesTags: ['Teams'],
+    }),
+    getTeamDetails: builder.query<Team, string>({
+      query: (id) => ({
+        url: `/team/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
+      providesTags: ['Teams'],
+    }),
+    registerNewTeam: builder.mutation<Team, any>({
+      query: (data) => ({
+        url: `/team/register`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'multipart/form-data;',
+        },
+        data,
+        formData: true,
+      }),
+      transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
+      invalidatesTags: ['Teams'],
+    }),
+    updateTeamDetails: builder.mutation<Team, { id: string; data: any }>({
+      query: ({ id, data }) => ({
+        url: `/team/update/${id}`,
+        method: 'PATCH',
+        data,
+        headers: {
+          'Content-Type': 'multipart/form-data;',
+        },
+        formData: true,
+      }),
+    }),
   }),
 })
 
@@ -36,4 +76,8 @@ export const {
   useLoginUserMutation,
   useSignUpNewUserMutation,
   useRetrieveUserSessionQuery,
+  useGetUserRegisteredTeamsQuery,
+  useGetTeamDetailsQuery,
+  useRegisterNewTeamMutation,
+  useUpdateTeamDetailsMutation,
 } = authApiSlice

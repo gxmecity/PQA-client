@@ -74,7 +74,7 @@ export function NavigationMenuDemo() {
                   A collection of game events prepared to keep track of players
                   lederboard over time.
                 </ListItem> */}
-                <ListItem url='/' title='Register Team'>
+                <ListItem url='/dashboard/teams' title='Register Team'>
                   Register a new team to participate in your events
                 </ListItem>
               </ul>
@@ -161,7 +161,7 @@ const MobileNav = () => {
                     perfect quiz night.
                   </ListItem>
 
-                  <ListItem url='/' title='Register Team'>
+                  <ListItem url='/dashboard/teams' title='Register Team'>
                     Register a new team to participate in your events
                   </ListItem>
                 </CollapsibleContent>

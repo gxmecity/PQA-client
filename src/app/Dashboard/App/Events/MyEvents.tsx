@@ -1,12 +1,36 @@
 import AppButton from '@/components/AppButton'
+import AppDialog from '@/components/AppDialog'
 import { AppSelect, SelectOptionType } from '@/components/AppSelect'
-import QuizItem from '@/components/QuizItem'
+import EventItem from '@/components/EventItem'
 import { Label } from '@/components/ui/label'
-import { quizzes } from '@/data'
-import { StarFilledIcon } from '@radix-ui/react-icons'
-import { Plus } from 'lucide-react'
+import { errorResponseHandler } from '@/lib/utils'
+import { useAppSelector } from '@/redux/store'
+import {
+  useCreateHostedEventMutation,
+  useGetUserHostedEventsQuery,
+} from '@/services/events'
+import { useGetUserCreatedQuizQuery } from '@/services/quiz'
+import { Clock, Play, Plus } from 'lucide-react'
+import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export function Component() {
+  const { user } = useAppSelector((state) => state.auth)
+  const [open, setOpen] = useState(false)
+  const navigate = useNavigate()
+
+  const { data: events = [], isLoading: loadingEvents } =
+    useGetUserHostedEventsQuery(user?._id!, {
+      skip: !user,
+    })
+
+  const { data: quizzes = [], isLoading: loadingQuiz } =
+    useGetUserCreatedQuizQuery(undefined, {
+      skip: !open,
+    })
+  const [createEvent, { isLoading: creatingEvent }] =
+    useCreateHostedEventMutation()
+
   const sortOptions: SelectOptionType[] = [
     {
       name: 'Date modified',
@@ -26,20 +50,35 @@ export function Component() {
     console.log(arg)
   }
 
+  const handleCreateNewEvent = async (game: Quiz) => {
+    try {
+      const response = await createEvent({
+        title: game.title,
+        quiz: game._id,
+      }).unwrap()
+
+      navigate(`/broadcast/${response._id}`)
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
+  }
+
   return (
     <div className=' dashboard_section'>
-      <h1 className=' dashboard_header'>My Quiz</h1>
+      <h1 className=' dashboard_header'>My Events</h1>
       <div className=' flex items-center gap-5 sm:flex-col'>
         <AppButton
           classname=' flex sm:w-full'
-          text='New Quiz'
+          text='Instant Event'
           icon={<Plus />}
+          onClick={() => setOpen(true)}
         />
         <AppButton
           classname=' flex sm:w-full'
-          text='Favorites'
+          text='Schedule Event'
           variant='secondary'
-          icon={<StarFilledIcon />}
+          icon={<Clock />}
+          disabled
         />
         <AppSelect
           placeholder='Sort by'
@@ -49,14 +88,35 @@ export function Component() {
           defaultValue='updatedAt'
         />
       </div>
+
       <div>
-        <Label className=' my-6 block'>My Quizes (08)</Label>
+        <Label className=' my-6 block'>My Events (08)</Label>
         <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
-          {quizzes.map((quiz) => (
-            <QuizItem key={quiz._id} data={quiz} />
+          {events.map((event) => (
+            <EventItem key={event._id} event={event} />
           ))}
         </div>
       </div>
+      <AppDialog open={open} setOpen={setOpen} title='Select a Quiz to play'>
+        <div className=' h-80 overflow-auto'>
+          {quizzes.map((quiz) => (
+            <div key={quiz._id} className=' flex justify-between items-center'>
+              <div>
+                <p className=' text-sm font-medium'>{quiz.title}</p>
+                <small className=' text-muted-foreground italic'>
+                  {quiz.rounds.length} rounds
+                </small>
+              </div>
+              <AppButton
+                icon={<Play />}
+                text='Play'
+                onClick={() => handleCreateNewEvent(quiz)}
+                loading={creatingEvent}
+              />
+            </div>
+          ))}
+        </div>
+      </AppDialog>
     </div>
   )
 }

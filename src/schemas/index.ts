@@ -101,6 +101,16 @@ export const RoundSchema = z.object({
   timer: z.string(),
 })
 
+export const registerTeamSchema = z.object({
+  name: z.string().min(1, 'Team name is required'),
+  passphrase: z.string().min(5, 'Phrase should be at least 5 letters'),
+  team_members: z.array(
+    z.object({
+      name: z.string().min(1, 'Enter a valid name'),
+    })
+  ),
+})
+
 // Event Schema
 export const createEventSchema = z.object({
   title: z

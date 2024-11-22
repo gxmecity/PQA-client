@@ -11,6 +11,7 @@ export const apiSlice = createApi({
     'Events',
     'Dashboard',
     'Teams',
+    'Team-Details',
     'Series',
     'Quiz-Details',
     'Event-Details',

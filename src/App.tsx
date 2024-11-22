@@ -6,17 +6,21 @@ import { ThemeProvider } from './context/theme-provider'
 import store from './redux/store'
 import { Provider } from 'react-redux'
 import { Toaster } from '@/components/ui/sonner'
+import { AblyProvider } from 'ably/react'
+import { ablyClient } from './lib/ably'
 
 function App() {
   const router = getApp()
 
   return (
-    <Provider store={store}>
-      <ThemeProvider>
-        <RouterProvider router={router} />
-        <Toaster />
-      </ThemeProvider>
-    </Provider>
+    <AblyProvider client={ablyClient}>
+      <Provider store={store}>
+        <ThemeProvider>
+          <RouterProvider router={router} />
+          <Toaster />
+        </ThemeProvider>
+      </Provider>
+    </AblyProvider>
   )
 }
 

@@ -31,3 +31,29 @@ export const errorResponseHandler = (err: ErrorResponse) => {
     })
   }
 }
+
+export const getTimeDifferenceFromDate = (data: string) => {
+  const date = new Date().getTime()
+  const datePlayed = new Date(data).getTime()
+  const diff = date - datePlayed
+
+  const toSec = diff / 1000
+  const toMin = toSec / 60
+  const toHour = toMin / 60
+  const toDays = toHour / 24
+
+  const returnText =
+    toDays >= 1
+      ? new Intl.RelativeTimeFormat('en').format(-Math.round(toDays), 'day')
+      : toHour >= 1
+        ? new Intl.RelativeTimeFormat('en').format(-Math.round(toHour), 'hour')
+        : 'Less than an hour ago'
+
+  return returnText
+}
+
+export const generateQuizEntryCode = () => {
+  const part1 = Math.floor(1000 + Math.random() * 9000)
+  const part2 = Math.floor(1000 + Math.random() * 9000)
+  return `${part1}${part2}`
+}

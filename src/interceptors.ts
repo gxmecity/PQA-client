@@ -6,7 +6,8 @@ import axios, {
 } from 'axios'
 
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: 'https://pqa-server.vercel.app',
+  // baseURL: 'https://pqa-server.vercel.app',
+  baseURL: 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },
