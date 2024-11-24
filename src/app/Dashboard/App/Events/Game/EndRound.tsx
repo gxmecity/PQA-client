@@ -46,7 +46,9 @@ export default function EndRound({
           for final scores
         </button>
       ) : (
-        <button className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'>
+        <button
+          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
+          onClick={nextStep}>
           Press{' '}
           <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
           to begin next round

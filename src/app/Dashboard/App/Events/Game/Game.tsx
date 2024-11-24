@@ -26,7 +26,7 @@ export interface RoundLeaderboard {
   leaderboard: { [key: string]: number }
 }
 
-type BonusLineup = Pick<Player, 'clientId' | 'name'>
+export type BonusLineup = Pick<Player, 'clientId' | 'name'>
 
 export interface GameState {
   players: Player[]
@@ -87,13 +87,13 @@ export default function Game({ data }: Props) {
     await roomChannel.presence.update({ remainingTime })
   }
 
-  const liveSyncWithHostDevice = (data: Partial<GameState>) => {
-    hostChannel.publish('sync-state', data)
+  const liveSyncWithHostDevice = async (data: Partial<GameState>) => {
+    await hostChannel.publish('sync-state', data)
   }
 
   const subscribeToHostChannels = () => {
     hostChannel.subscribe('open-room', (msg) => {
-      enterFullScreen()
+      // enterFullScreen()
       setGlobalGameState((prev) => ({ ...prev, roomOpen: msg.data.open }))
     })
     hostChannel.subscribe('start-quiz', () => {
@@ -112,14 +112,14 @@ export default function Game({ data }: Props) {
         },
       })
     })
-    hostChannel.subscribe('start-round', async () => {
-      const activeRound = quiz.rounds[globalGameState.activeRound]
+    hostChannel.subscribe('start-round', async (msg) => {
+      const activeRound = quiz.rounds[msg.data.activeRound]
       setGlobalGameState((prev) => ({
         ...prev,
         round_started: true,
         canRevealAnswer: false,
         indexOfDealer: 0,
-        activeQuestionIndex: null,
+        activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
         answeredQuestions: [],
       }))
       setStartingRound(true)
@@ -127,7 +127,7 @@ export default function Game({ data }: Props) {
         round_started: true,
         canRevealAnswer: false,
         indexOfDealer: 0,
-        activeQuestionIndex: null,
+        activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
         answeredQuestions: [],
       })
       roomChannel.publish('start-round', { round_started: true })
@@ -137,11 +137,11 @@ export default function Game({ data }: Props) {
       }
       setStartingRound(false)
     })
-    hostChannel.subscribe('next-question', () => {
+    hostChannel.subscribe('next-question', (msg) => {
       setSkipTimer(false)
       setRevealAnswer(false)
-      const prevQuestionIndex = globalGameState.activeQuestionIndex
-      const nextQuestionIndex = prevQuestionIndex ? prevQuestionIndex + 1 : 0
+      const prevQuestionIndex = msg.data.activeQuestion
+      const nextQuestionIndex = prevQuestionIndex + 1
       setGlobalGameState((prev) => ({
         ...prev,
         activeQuestionIndex: nextQuestionIndex,
@@ -162,28 +162,35 @@ export default function Game({ data }: Props) {
       })
       if (nextQuestionIndex) publishQuestion(nextQuestionIndex)
     })
-    hostChannel.subscribe('reveal-anwser', () => {
+    hostChannel.subscribe('start-answer-reveal', () => {
+      setGlobalGameState((prev) => ({
+        ...prev,
+        canRevealAnswer: true,
+        activeQuestionIndex: 0,
+      }))
+      liveSyncWithHostDevice({
+        canRevealAnswer: true,
+        activeQuestionIndex: 0,
+      })
+    })
+    hostChannel.subscribe('reveal-answer', (msg) => {
       setRevealAnswer(true)
+      roomChannel.publish('correct-answer', {
+        answer:
+          quiz.rounds[msg.data.activeRound].questions[msg.data.activeQuestion]
+            .answer.answer_text,
+      })
     })
     hostChannel.subscribe('award-point', (msg) => {
       updatePlayerScore(msg.data.playerId, msg.data.isBonus ? 5 : 10)
     })
     hostChannel.subscribe('end-round', async () => {
-      if (globalGameState.activeRound === quiz.rounds.length - 1) {
-        await publishPlayerScoresToPlayerChannels()
-        setGlobalGameState((prev) => ({
-          ...prev,
-          round_ended: true,
-          quiz_ended: true,
-        }))
-        liveSyncWithHostDevice({ round_ended: true, quiz_ended: true })
-      } else {
-        setGlobalGameState((prev) => ({ ...prev, round_ended: true }))
-        liveSyncWithHostDevice({ round_ended: true })
-      }
+      setGlobalGameState((prev) => ({ ...prev, round_ended: true }))
+      liveSyncWithHostDevice({ round_ended: true })
+      roomChannel.publish('round-ended', { round_ended: true })
     })
-    hostChannel.subscribe('next-round', () => {
-      const currentRound = globalGameState.activeRound
+    hostChannel.subscribe('next-round', (msg) => {
+      const currentRound = msg.data.activeRound
       const nextRound = currentRound + 1
       setGlobalGameState((prev) => ({
         ...prev,
@@ -203,6 +210,10 @@ export default function Game({ data }: Props) {
           time: quiz.rounds[nextRound].timer,
         },
       })
+    })
+    hostChannel.subscribe('final-result', () => {
+      setGlobalGameState((prev) => ({ ...prev, quiz_ended: true }))
+      liveSyncWithHostDevice({ quiz_ended: true })
     })
     hostChannel.subscribe('leaderboard-next', () => {
       setFinalLeaderboardShowPoitionIndex((prev) =>
@@ -243,16 +254,17 @@ export default function Game({ data }: Props) {
   }, [data])
 
   const startTimer = async (event: string, countdown: number) => {
-    setSeconds(countdown)
+    while (countdown >= 0) {
+      setSeconds(countdown)
 
-    while (seconds >= 0) {
-      await roomChannel.publish(event, { seconds })
-      await updatePresenceWithTimer(seconds)
-      setSeconds((prev) => prev - 1)
-
+      roomChannel.publish(event, {
+        countDownSec: countdown,
+      })
       await new Promise((resolve) => setTimeout(resolve, 1000))
+      countdown -= 1
       if (event === 'question-timer' && skipTimer) break
     }
+
     await roomChannel.publish('timer-ended', { message: 'Time is up!' })
   }
 
@@ -273,12 +285,12 @@ export default function Game({ data }: Props) {
     setGlobalGameState((prev) => ({ ...prev, activeQuestionIndex: index }))
   }
 
-  const startQuestionCountdownTimer = async (callback: () => void) => {
+  const startQuestionCountdownTimer = async (callback?: () => void) => {
     const time = quiz.rounds[globalGameState.activeRound].timer
     if (!time) return
 
     await startTimer('question-timer', time)
-    callback()
+    if (callback) callback()
   }
 
   const handleNewPlayerJoined = (player: PresenceMessage) => {
@@ -287,6 +299,7 @@ export default function Game({ data }: Props) {
       avatar_url: player.data.avater,
       team_id: player.data.team_id,
       name: player.data.name,
+      is_online: true,
     }
 
     const updatedleaderBoard: RoundLeaderboard[] =
@@ -415,24 +428,19 @@ export default function Game({ data }: Props) {
       joinCode={data.event_data.entry_code}
       numberOfPlayers={globalGameState.players.length}
       hostDevices={globalGameState.remoteHostDevices}>
-      {!globalGameState.quiz_ended ? (
+      {globalGameState.quiz_ended ? (
         <FinalResultComponent />
       ) : !globalGameState.quiz_started ? (
         <WaitingArea
           joinedPlayers={globalGameState.players}
           title={event_data.title}
           startQuiz={() => {
-            setGlobalGameState((prev) => ({
-              ...prev,
-              quiz_started: true,
-              activeRound: 0,
-            }))
+            hostChannel.publish('start-quiz', {})
           }}
         />
-      ) : quiz.rounds[globalGameState.activeRound].round_type === 'trivia' &&
-        globalGameState.activeQuestionIndex ? (
+      ) : quiz.rounds[globalGameState.activeRound].round_type === 'trivia' ? (
         <Trivia
-          activeQuestionIndex={globalGameState.activeQuestionIndex}
+          activeQuestionIndex={globalGameState.activeQuestionIndex!}
           roundindex={globalGameState.activeRound}
           hostChannel={hostChannel}
           round={quiz.rounds[globalGameState.activeRound]}
@@ -444,6 +452,11 @@ export default function Game({ data }: Props) {
           ended={globalGameState.round_ended}
           starting={startingRound}
           isLastRound={globalGameState.activeRound === quiz.rounds.length - 1}
+          isLastQuestion={
+            globalGameState.activeQuestionIndex ===
+            quiz.rounds[globalGameState.activeRound].questions.length - 1
+          }
+          startTimerFunction={startQuestionCountdownTimer}
         />
       ) : (
         <Dealers

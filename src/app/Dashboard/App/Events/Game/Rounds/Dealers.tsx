@@ -4,7 +4,7 @@ import Answer from './Answer'
 import DealersOptions from './DealersOptions'
 import Question from './Question'
 import { RealtimeChannel } from 'ably'
-import { RoundLeaderboard } from '../Game'
+import { BonusLineup, RoundLeaderboard } from '../Game'
 import EndRound from '../EndRound'
 import RoundIntro from '../RoundIntro'
 
@@ -19,7 +19,7 @@ interface DealersChoiceProps {
   ended: boolean
   scores: RoundLeaderboard[]
   seconds: number
-  bonusLineup: Player[]
+  bonusLineup: BonusLineup[]
   dealingTeam: Player
 }
 
@@ -81,7 +81,13 @@ export default function Dealers({
     )
 
   if (!started)
-    return <RoundIntro startTimer={() => {}} title={round.round_name} />
+    return (
+      <RoundIntro
+        roundIndex={1}
+        startTimer={() => {}}
+        title={round.round_name}
+      />
+    )
 
   if (starting)
     return (
@@ -145,6 +151,7 @@ export default function Dealers({
             questionNumber={activeQuestionIndex + 1}
             shouldRevealAnswer
             goToNext={() => {}}
+            startTimer={() => {}}
           />
         </>
       ) : (

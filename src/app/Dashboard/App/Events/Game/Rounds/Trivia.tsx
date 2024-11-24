@@ -19,6 +19,8 @@ interface TriviaProps {
   starting: boolean
   seconds: number
   isLastRound: boolean
+  isLastQuestion: boolean
+  startTimerFunction: () => void
 }
 
 export default function Trivia({
@@ -33,12 +35,50 @@ export default function Trivia({
   starting,
   isLastRound,
   canRevealAnswer,
+  startTimerFunction,
+  isLastQuestion,
   revealAnswer,
 }: TriviaProps) {
-  const isLastQuestion = false
   const handleTimeComplete = () => {}
 
-  const goToNextQuestion = () => {}
+  const goToNextQuestion = () => {
+    console.log('object')
+
+    if (seconds) return
+
+    if (isLastQuestion) {
+      if (!canRevealAnswer) {
+        console.log('lit1')
+        hostChannel.publish('start-answer-reveal', '')
+      } else {
+        console.log('lit2')
+        hostChannel.publish('end-round', {})
+      }
+    } else {
+      if (canRevealAnswer && !revealAnswer) {
+        console.log('reveal')
+        hostChannel.publish('reveal-answer', {
+          activeRound: roundindex,
+          activeQuestion: activeQuestionIndex,
+        })
+      } else {
+        console.log('next')
+        hostChannel.publish('next-question', {
+          activeQuestion: activeQuestionIndex,
+        })
+      }
+    }
+  }
+
+  const goToNextRound = () => {
+    if (isLastRound) {
+      hostChannel.publish('final-result', '')
+    } else {
+      hostChannel.publish('next-round', {
+        activeRound: roundindex,
+      })
+    }
+  }
 
   const roundLeaderboard = scores.find(
     (round) => round.round === roundindex
@@ -53,7 +93,7 @@ export default function Trivia({
         RoundTitle={round.round_name}
         isLastRound={isLastRound}
         scores={roundLeaderboard}
-        nextStep={goToNextQuestion}
+        nextStep={goToNextRound}
       />
     )
 
@@ -67,7 +107,17 @@ export default function Trivia({
     )
 
   if (!started)
-    return <RoundIntro startTimer={goToNextQuestion} title={round.round_name} />
+    return (
+      <RoundIntro
+        roundIndex={roundindex + 1}
+        startTimer={() => {
+          hostChannel.publish('start-round', {
+            activeRound: roundindex,
+          })
+        }}
+        title={round.round_name}
+      />
+    )
 
   if (revealAnswer)
     return (
@@ -88,7 +138,8 @@ export default function Trivia({
       shouldCountdown={!canRevealAnswer}
       isLastQuestion={isLastQuestion}
       totalTime={round.timer}
-      goToNext={() => {}}
+      goToNext={goToNextQuestion}
+      startTimer={startTimerFunction}
     />
   )
 }

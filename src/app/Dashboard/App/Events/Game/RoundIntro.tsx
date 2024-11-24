@@ -1,11 +1,13 @@
 import { useEffect } from 'react'
 
 export default function RoundIntro({
+  roundIndex,
   startTimer,
   title,
 }: {
   startTimer: () => void
   title: string
+  roundIndex: number
 }) {
   const handleKeyPress = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
@@ -24,7 +26,7 @@ export default function RoundIntro({
   return (
     <div className='h-full flex items-center justify-center '>
       <div className=' h-56 bg-black/80 flex justify-around items-center w-full gap-5 px-10 max-w-5xl font-bold'>
-        <h1 className='gd-text-primary text-5xl w-[20%]'>Round 1</h1>
+        <h1 className='gd-text-primary text-5xl w-max'>Round {roundIndex}</h1>
         <span className=' h-[2px] bg-gradient-to-tr from-white to-primary flex-auto'></span>
         <h1 className='gd-text-primary text-5xl truncate w-[30%]'>{title}</h1>
       </div>

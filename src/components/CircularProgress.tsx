@@ -11,7 +11,7 @@ export default function CircularProgress({ value, total }: Props) {
       min={0}
       max={total}
       value={value}
-      gaugePrimaryColor='rgb(79 70 229)'
+      gaugePrimaryColor='rgb(0 0 0)'
       gaugeSecondaryColor='rgba(0, 0, 0, 0.1)'
     />
   )
