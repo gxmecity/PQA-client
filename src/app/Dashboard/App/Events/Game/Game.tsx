@@ -83,17 +83,13 @@ export default function Game({ data }: Props) {
     answeredQuestions: [],
   })
 
-  const updatePresenceWithTimer = async (remainingTime: number) => {
-    await roomChannel.presence.update({ remainingTime })
-  }
-
   const liveSyncWithHostDevice = async (data: Partial<GameState>) => {
     await hostChannel.publish('sync-state', data)
   }
 
   const subscribeToHostChannels = () => {
     hostChannel.subscribe('open-room', (msg) => {
-      // enterFullScreen()
+      enterFullScreen()
       setGlobalGameState((prev) => ({ ...prev, roomOpen: msg.data.open }))
     })
     hostChannel.subscribe('start-quiz', () => {
@@ -109,6 +105,7 @@ export default function Game({ data }: Props) {
           title: quiz.rounds[0].round_name,
           type: quiz.rounds[0].round_name,
           time: quiz.rounds[0].timer,
+          roundIndex: 0,
         },
       })
     })
@@ -151,16 +148,33 @@ export default function Game({ data }: Props) {
     })
     hostChannel.subscribe('set-question-index', (msg) => {
       const nextQuestionIndex = msg.data.questionIndex
-      setGlobalGameState((prev) => ({
-        ...prev,
-        activeQuestionIndex: nextQuestionIndex,
-        bonusLineup: [],
-      }))
-      liveSyncWithHostDevice({
-        activeQuestionIndex: nextQuestionIndex,
-        bonusLineup: [],
-      })
-      if (nextQuestionIndex) publishQuestion(nextQuestionIndex)
+
+      if (nextQuestionIndex !== null) {
+        setGlobalGameState((prev) => ({
+          ...prev,
+          activeQuestionIndex: nextQuestionIndex,
+          bonusLineup: [],
+          answeredQuestions: [...prev.answeredQuestions, nextQuestionIndex],
+        }))
+        liveSyncWithHostDevice({
+          activeQuestionIndex: nextQuestionIndex,
+          bonusLineup: [],
+          answeredQuestions: [nextQuestionIndex],
+        })
+        publishQuestion(nextQuestionIndex)
+      } else {
+        setGlobalGameState((prev) => ({
+          ...prev,
+          activeQuestionIndex: nextQuestionIndex,
+          bonusLineup: [],
+        }))
+        liveSyncWithHostDevice({
+          activeQuestionIndex: nextQuestionIndex,
+          bonusLineup: [],
+        })
+      }
+
+      roomChannel.publish('allow-bonus', { allowBonus: false })
     })
     hostChannel.subscribe('start-answer-reveal', () => {
       setGlobalGameState((prev) => ({
@@ -182,11 +196,16 @@ export default function Game({ data }: Props) {
       })
     })
     hostChannel.subscribe('award-point', (msg) => {
-      updatePlayerScore(msg.data.playerId, msg.data.isBonus ? 5 : 10)
+      updatePlayerScore(
+        msg.data.playerId,
+        msg.data.isBonus ? 5 : 10,
+        msg.data.activeRound
+      )
     })
     hostChannel.subscribe('end-round', async () => {
       setGlobalGameState((prev) => ({ ...prev, round_ended: true }))
       liveSyncWithHostDevice({ round_ended: true })
+      setRevealAnswer(false)
       roomChannel.publish('round-ended', { round_ended: true })
     })
     hostChannel.subscribe('next-round', (msg) => {
@@ -208,6 +227,7 @@ export default function Game({ data }: Props) {
           title: quiz.rounds[nextRound].round_name,
           type: quiz.rounds[nextRound].round_name,
           time: quiz.rounds[nextRound].timer,
+          roundIndex: nextRound,
         },
       })
     })
@@ -256,8 +276,7 @@ export default function Game({ data }: Props) {
   const startTimer = async (event: string, countdown: number) => {
     while (countdown >= 0) {
       setSeconds(countdown)
-
-      roomChannel.publish(event, {
+      await roomChannel.publish(event, {
         countDownSec: countdown,
       })
       await new Promise((resolve) => setTimeout(resolve, 1000))
@@ -301,66 +320,70 @@ export default function Game({ data }: Props) {
       name: player.data.name,
       is_online: true,
     }
-
-    const updatedleaderBoard: RoundLeaderboard[] =
-      globalGameState.leaderboard.map((item) => ({
+    setGlobalGameState((prev) => ({
+      ...prev,
+      players: [...prev.players, newPlayerData],
+      leaderboard: prev.leaderboard.map((item) => ({
         round: item.round,
         leaderboard: {
           ...item.leaderboard,
           [player.clientId]: 0,
         },
-      }))
-    setGlobalGameState((prev) => ({
-      ...prev,
-      players: [...prev.players, newPlayerData],
-      leaderboard: updatedleaderBoard,
+      })),
     }))
     const playerChannel = ablyClient.channels.get(
       `${event_data.entry_code}:player-${player.clientId}`
     )
 
     playerChannel.subscribe('submit-answer', (msg) => {
-      const client = msg.clientId
+      const clientId = msg.data.clientId
+      const activeRound = msg.data.activeRound
+      const questionIndex = msg.data.activeQuestion
 
-      if (!globalGameState.activeQuestionIndex || !client) return
       const activeQuestionAnswer =
-        quiz.rounds[globalGameState.activeRound].questions[
-          globalGameState.activeQuestionIndex
-        ].answer.answer_text
+        quiz.rounds[activeRound].questions[questionIndex].answer.answer_text
       if (
         removeSpaceFromAnswerString(msg.data.answer) ===
         removeSpaceFromAnswerString(activeQuestionAnswer)
       ) {
         const point = pointAllocationByTimeAnswered(
           msg.data.time,
-          quiz.rounds[globalGameState.activeRound].timer
+          quiz.rounds[activeRound].timer
         )
 
-        updatePlayerScore(client, point)
+        updatePlayerScore(clientId, point, activeRound)
       }
     })
 
     playerChannel.subscribe('request-bonus', (msg) => {
-      if (globalGameState.bonusLineup.length < 5) {
-        const updatedBonusList: BonusLineup[] = [
-          ...globalGameState.bonusLineup,
+      setGlobalGameState((prev) => ({
+        ...prev,
+        bonusLineup: [
+          ...prev.bonusLineup,
           {
             clientId: msg.clientId!,
             name: msg.data.name,
           },
-        ]
-        setGlobalGameState((prev) => ({
-          ...prev,
-          bonusLineup: updatedBonusList,
-        }))
-        liveSyncWithHostDevice({ bonusLineup: updatedBonusList })
-      }
+        ],
+      }))
+      liveSyncWithHostDevice({
+        bonusLineup: [
+          {
+            clientId: msg.clientId!,
+            name: msg.data.name,
+          },
+        ],
+      })
     })
   }
 
-  const updatePlayerScore = (playerId: string, point: number) => {
+  const updatePlayerScore = (
+    playerId: string,
+    point: number,
+    roundIndex: number
+  ) => {
     const activeRoundLeaderBoard = globalGameState.leaderboard.find(
-      (item) => item.round === globalGameState.activeRound
+      (item) => item.round === roundIndex
     )
 
     if (!activeRoundLeaderBoard) return
@@ -463,6 +486,7 @@ export default function Game({ data }: Props) {
           activeQuestionIndex={globalGameState.activeQuestionIndex}
           roundindex={globalGameState.activeRound}
           hostChannel={hostChannel}
+          roomChannel={roomChannel}
           round={quiz.rounds[globalGameState.activeRound]}
           revealAnswer={revealAnswer}
           scores={globalGameState.leaderboard}
@@ -472,6 +496,8 @@ export default function Game({ data }: Props) {
           isLastRound={globalGameState.activeRound === quiz.rounds.length - 1}
           bonusLineup={globalGameState.bonusLineup}
           dealingTeam={globalGameState.players[globalGameState.indexOfDealer]}
+          startTimerFunction={startQuestionCountdownTimer}
+          answeredQuestions={globalGameState.answeredQuestions}
         />
       )}
     </GameInterface>

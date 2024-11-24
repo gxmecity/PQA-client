@@ -1,4 +1,3 @@
-import { useState } from 'react'
 import Answer from './Answer'
 import Question from './Question'
 import { RealtimeChannel } from 'ably'
@@ -42,27 +41,26 @@ export default function Trivia({
   const handleTimeComplete = () => {}
 
   const goToNextQuestion = () => {
-    console.log('object')
-
     if (seconds) return
 
     if (isLastQuestion) {
       if (!canRevealAnswer) {
-        console.log('lit1')
         hostChannel.publish('start-answer-reveal', '')
-      } else {
-        console.log('lit2')
-        hostChannel.publish('end-round', {})
-      }
-    } else {
-      if (canRevealAnswer && !revealAnswer) {
-        console.log('reveal')
+      } else if (!revealAnswer) {
         hostChannel.publish('reveal-answer', {
           activeRound: roundindex,
           activeQuestion: activeQuestionIndex,
         })
       } else {
-        console.log('next')
+        hostChannel.publish('end-round', {})
+      }
+    } else {
+      if (canRevealAnswer && !revealAnswer) {
+        hostChannel.publish('reveal-answer', {
+          activeRound: roundindex,
+          activeQuestion: activeQuestionIndex,
+        })
+      } else {
         hostChannel.publish('next-question', {
           activeQuestion: activeQuestionIndex,
         })

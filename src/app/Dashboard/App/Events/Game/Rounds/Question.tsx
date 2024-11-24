@@ -13,7 +13,7 @@ interface Props {
   isLastQuestion?: boolean
   goToNext: () => void
   shouldCountdown: boolean
-  startTimer: () => void
+  startTimer: (arg?: () => void) => void
 }
 
 export default function Question({
@@ -31,7 +31,7 @@ export default function Question({
 
   const startQuestionCountdown = () => {
     if (!shouldCountdown) return
-    startTimer()
+    startTimer(onTimeComplete)
   }
 
   const handleKeyPress = (event: KeyboardEvent) => {

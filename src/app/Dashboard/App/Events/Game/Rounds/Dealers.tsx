@@ -15,12 +15,15 @@ interface DealersChoiceProps {
   revealAnswer: boolean
   isLastRound: boolean
   hostChannel: RealtimeChannel
+  roomChannel: RealtimeChannel
   started: boolean
   ended: boolean
   scores: RoundLeaderboard[]
   seconds: number
   bonusLineup: BonusLineup[]
   dealingTeam: Player
+  answeredQuestions: number[]
+  startTimerFunction: (arg?: () => void) => void
 }
 
 export default function Dealers({
@@ -30,18 +33,19 @@ export default function Dealers({
   revealAnswer,
   isLastRound,
   hostChannel,
+  roomChannel,
   started,
   ended,
   scores,
   seconds,
   bonusLineup,
   dealingTeam,
+  answeredQuestions,
+  startTimerFunction,
 }: DealersChoiceProps) {
   const [starting, setStarting] = useState(false)
   const [timer, setTimer] = useState(0)
   const timerRef = useRef<any>(null)
-  const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([])
-  const [showBonus, setshowBonus] = useState(false)
 
   const selectQuestion = (arg: number) => {
     if (starting) return // Prevent multiple intervals
@@ -50,17 +54,43 @@ export default function Dealers({
     setTimer(3) // Reset the countdown to 5 seconds
 
     // Set up interval
-    timerRef.current = setInterval(() => {
+    timerRef.current = setInterval(async () => {
+      await hostChannel.publish('set-question-index', {
+        questionIndex: arg,
+      })
       setTimer((prevSeconds) => {
         if (prevSeconds === 1) {
           clearInterval(timerRef.current) // Clear interval at 0
           setStarting(false) // Set timer as inactive
-          setAnsweredQuestions((prev) => [...prev, arg])
           return 0
         }
         return prevSeconds - 1
       })
     }, 1000)
+  }
+
+  const allowBonusPoints = () => {
+    roomChannel.publish('allow-bonus', {
+      allowBonus: true,
+    })
+  }
+
+  const goToNextRound = () => {
+    if (isLastRound) {
+      hostChannel.publish('final-result', '')
+    } else {
+      hostChannel.publish('next-round', {
+        activeRound: roundindex,
+      })
+    }
+  }
+
+  const awardPointToPlayer = async (playerId: string, isBonus: boolean) => {
+    await hostChannel.publish('award-point', {
+      playerId,
+      isBonus,
+      activeRound: roundindex,
+    })
   }
 
   const roundLeaderboard = scores.find(
@@ -76,15 +106,19 @@ export default function Dealers({
         RoundTitle={round.round_name}
         isLastRound={isLastRound}
         scores={roundLeaderboard}
-        nextStep={() => {}}
+        nextStep={goToNextRound}
       />
     )
 
   if (!started)
     return (
       <RoundIntro
-        roundIndex={1}
-        startTimer={() => {}}
+        roundIndex={roundindex + 1}
+        startTimer={() => {
+          hostChannel.publish('start-round', {
+            activeRound: roundindex,
+          })
+        }}
         title={round.round_name}
       />
     )
@@ -103,7 +137,9 @@ export default function Dealers({
         answeredQuestions={answeredQuestions}
         questions={round.questions.length}
         selectQuestion={selectQuestion}
-        endRound={() => {}}
+        endRound={() => {
+          hostChannel.publish('end-round', {})
+        }}
       />
     )
 
@@ -119,7 +155,9 @@ export default function Dealers({
                 <span className=' flex-auto h-[1px] bg-white/60'></span>
               </div>
               <button
-                onClick={() => {}}
+                onClick={() => () =>
+                  awardPointToPlayer(dealingTeam.clientId, true)
+                }
                 className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left'>
                 {dealingTeam.name}
               </button>
@@ -134,7 +172,7 @@ export default function Dealers({
                 {bonusLineup.map((player, index) => (
                   <button
                     key={index}
-                    onClick={() => {}}
+                    onClick={() => awardPointToPlayer(player.clientId, true)}
                     className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
                     <Hand size={18} className='text-primary' /> {player.name}
                   </button>
@@ -144,20 +182,29 @@ export default function Dealers({
           </div>
           <Question
             data={round.questions[activeQuestionIndex].question}
-            onTimeComplete={() => setshowBonus(true)}
+            onTimeComplete={allowBonusPoints}
             totalTime={round.timer}
             shouldCountdown
             timer={seconds}
             questionNumber={activeQuestionIndex + 1}
             shouldRevealAnswer
-            goToNext={() => {}}
-            startTimer={() => {}}
+            goToNext={() => {
+              hostChannel.publish('reveal-answer', {
+                activeRound: roundindex,
+                activeQuestion: activeQuestionIndex,
+              })
+            }}
+            startTimer={startTimerFunction}
           />
         </>
       ) : (
         <Answer
           data={round.questions[activeQuestionIndex].answer}
-          goToNext={() => {}}
+          goToNext={() => {
+            hostChannel.publish('set-question-index', {
+              questionIndex: null,
+            })
+          }}
         />
       )}
     </>
