@@ -58,7 +58,36 @@ export const generateQuizEntryCode = () => {
   return `${part1}${part2}`
 }
 
+export const splitCodeInHalf = (code: string) => {
+  const first = code.slice(0, 4)
+  const second = code.slice(4, 8)
+
+  return `${first} ${second}`
+}
+
 export const copyTextToClipboard = (text: string) => {
   navigator.clipboard.writeText(text)
   toast.success('Copied to clipboard')
+}
+
+export const pointAllocationByTimeAnswered = (
+  timeAnswered: number,
+  totalTime: number
+) => {
+  const percentageTimeOfAnswer = (timeAnswered / totalTime) * 100
+
+  switch (true) {
+    case percentageTimeOfAnswer >= 75:
+      return 10
+    case percentageTimeOfAnswer >= 50:
+      return (75 / 100) * 10
+    case percentageTimeOfAnswer >= 30:
+      return (50 / 100) * 10
+    default:
+      return (10 / 100) * 10
+  }
+}
+
+export const removeSpaceFromAnswerString = (value: string) => {
+  return value.replace(/\s+/g, '').toLowerCase()
 }

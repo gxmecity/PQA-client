@@ -82,6 +82,7 @@ export const {
   useGetUserCreatedQuizQuery,
   useCreateNewQuizMutation,
   useGetUserQuizDetailsQuery,
+  useLazyGetUserQuizDetailsQuery,
   useUpdateUserQuizDetailsMutation,
   useDeleteUserQuizMutation,
   useAddQuizRoundMutation,

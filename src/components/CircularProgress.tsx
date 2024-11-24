@@ -1,4 +1,4 @@
-import React, { createRef, useEffect } from 'react'
+import AnimatedCircularProgressBar from '@/components/ui/animated-circular-progress-bar'
 
 type Props = {
   value: number
@@ -6,15 +6,13 @@ type Props = {
 }
 
 export default function CircularProgress({ value, total }: Props) {
-  const ref = createRef<HTMLDivElement>()
-
-  const percentageValue = (value / total) * 100
-
-  useEffect(() => {
-    if (!ref.current) return
-    ref.current.style.setProperty('--progress', percentageValue + '%')
-    ref.current.setAttribute('data-value', value.toString())
-  }, [value])
-
-  return <div className='progress' ref={ref} data-value={value}></div>
+  return (
+    <AnimatedCircularProgressBar
+      min={0}
+      max={total}
+      value={value}
+      gaugePrimaryColor='rgb(79 70 229)'
+      gaugeSecondaryColor='rgba(0, 0, 0, 0.1)'
+    />
+  )
 }

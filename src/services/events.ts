@@ -37,6 +37,20 @@ export const eventsAndSeriesApiSlice = apiSlice.injectEndpoints({
       }),
       transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
     }),
+    getEventByHostCode: builder.query<QuizEvent, string>({
+      query: (id) => ({
+        url: `/play/host/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
+    }),
+    getEventByEntryCode: builder.query<QuizEvent, string>({
+      query: (id) => ({
+        url: `/play/guest/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
+    }),
   }),
 })
 
@@ -45,4 +59,8 @@ export const {
   useCreateHostedEventMutation,
   useGetEventByIdQuery,
   useUpdateQuizEventMutation,
+  useGetEventByEntryCodeQuery,
+  useLazyGetEventByEntryCodeQuery,
+  useGetEventByHostCodeQuery,
+  useLazyGetEventByHostCodeQuery,
 } = eventsAndSeriesApiSlice

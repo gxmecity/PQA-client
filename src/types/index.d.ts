@@ -127,3 +127,10 @@ declare interface QuizEvent {
   event_started: boolean
   event_ended: boolean
 }
+
+declare interface Player {
+  name: string
+  team_id?: string
+  clientId: string
+  avatar_url?: string
+}

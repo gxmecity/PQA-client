@@ -3,30 +3,58 @@ import { useRef, useState } from 'react'
 import Answer from './Answer'
 import DealersOptions from './DealersOptions'
 import Question from './Question'
-import { RoundProps } from './Trivia'
+import { RealtimeChannel } from 'ably'
+import { RoundLeaderboard } from '../Game'
+import EndRound from '../EndRound'
+import RoundIntro from '../RoundIntro'
 
-export default function Dealers({ data, onRoundEnded }: RoundProps) {
-  const [activeIndex, setactiveIndex] = useState<number | null>(null)
+interface DealersChoiceProps {
+  activeQuestionIndex: number | null
+  roundindex: number
+  round: Round
+  revealAnswer: boolean
+  isLastRound: boolean
+  hostChannel: RealtimeChannel
+  started: boolean
+  ended: boolean
+  scores: RoundLeaderboard[]
+  seconds: number
+  bonusLineup: Player[]
+  dealingTeam: Player
+}
+
+export default function Dealers({
+  activeQuestionIndex,
+  round,
+  roundindex,
+  revealAnswer,
+  isLastRound,
+  hostChannel,
+  started,
+  ended,
+  scores,
+  seconds,
+  bonusLineup,
+  dealingTeam,
+}: DealersChoiceProps) {
   const [starting, setStarting] = useState(false)
-  const [seconds, setSeconds] = useState(0)
+  const [timer, setTimer] = useState(0)
   const timerRef = useRef<any>(null)
   const [answeredQuestions, setAnsweredQuestions] = useState<number[]>([])
-  const [revealAnswer, setRevealAnswer] = useState<boolean>(false)
   const [showBonus, setshowBonus] = useState(false)
 
   const selectQuestion = (arg: number) => {
     if (starting) return // Prevent multiple intervals
 
     setStarting(true) // Set timer as active
-    setSeconds(3) // Reset the countdown to 5 seconds
+    setTimer(3) // Reset the countdown to 5 seconds
 
     // Set up interval
     timerRef.current = setInterval(() => {
-      setSeconds((prevSeconds) => {
+      setTimer((prevSeconds) => {
         if (prevSeconds === 1) {
           clearInterval(timerRef.current) // Clear interval at 0
           setStarting(false) // Set timer as inactive
-          setactiveIndex(arg)
           setAnsweredQuestions((prev) => [...prev, arg])
           return 0
         }
@@ -35,21 +63,41 @@ export default function Dealers({ data, onRoundEnded }: RoundProps) {
     }, 1000)
   }
 
+  const roundLeaderboard = scores.find(
+    (round) => round.round === roundindex
+  ) ?? {
+    round: roundindex,
+    leaderboard: {},
+  }
+
+  if (ended)
+    return (
+      <EndRound
+        RoundTitle={round.round_name}
+        isLastRound={isLastRound}
+        scores={roundLeaderboard}
+        nextStep={() => {}}
+      />
+    )
+
+  if (!started)
+    return <RoundIntro startTimer={() => {}} title={round.round_name} />
+
   if (starting)
     return (
       <div className='h-full flex items-center justify-center flex-col gap-10 '>
         <p className='font-semibold text-xl'>Get Ready for your Question</p>
-        <h1 className='font-bold text-7xl'>{seconds}</h1>
+        <h1 className='font-bold text-7xl'>{timer}</h1>
       </div>
     )
 
-  if (activeIndex === null)
+  if (activeQuestionIndex === null)
     return (
       <DealersOptions
         answeredQuestions={answeredQuestions}
-        questions={data.questions}
+        questions={round.questions.length}
         selectQuestion={selectQuestion}
-        endRound={onRoundEnded}
+        endRound={() => {}}
       />
     )
 
@@ -65,49 +113,44 @@ export default function Dealers({ data, onRoundEnded }: RoundProps) {
                 <span className=' flex-auto h-[1px] bg-white/60'></span>
               </div>
               <button
-                onClick={() => setRevealAnswer(true)}
+                onClick={() => {}}
                 className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left'>
-                We Know Nothing
+                {dealingTeam.name}
               </button>
             </div>
-            {showBonus && (
+            {!!bonusLineup.length && (
               <div className=' flex flex-col gap-3'>
                 <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                   <small>Bonus to:</small>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                 </div>
-                {Array.from({ length: 5 }).map((_, index) => (
+                {bonusLineup.map((player, index) => (
                   <button
                     key={index}
-                    onClick={() => setRevealAnswer(true)}
+                    onClick={() => {}}
                     className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
-                    <Hand size={18} className='text-primary' /> We Know Nothing
+                    <Hand size={18} className='text-primary' /> {player.name}
                   </button>
                 ))}
               </div>
             )}
           </div>
           <Question
-            data={data.questions[activeIndex]}
+            data={round.questions[activeQuestionIndex].question}
             onTimeComplete={() => setshowBonus(true)}
-            timer={5}
-            questionNumber={activeIndex + 1}
-            shouldRevealAnswer={true}
-            shouldCounntdown={true}
-            isLastQuestion={false}
-            goToNext={() => setRevealAnswer(true)}
+            totalTime={round.timer}
+            shouldCountdown
+            timer={seconds}
+            questionNumber={activeQuestionIndex + 1}
+            shouldRevealAnswer
+            goToNext={() => {}}
           />
         </>
       ) : (
         <Answer
-          data={data.questions[activeIndex].answer}
-          isLastQuestion={false}
-          goToNext={() => {
-            setactiveIndex(null)
-            setRevealAnswer(false)
-            setshowBonus(false)
-          }}
+          data={round.questions[activeQuestionIndex].answer}
+          goToNext={() => {}}
         />
       )}
     </>

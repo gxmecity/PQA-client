@@ -1,19 +1,47 @@
+import { splitCodeInHalf } from '@/lib/utils'
 import { ReactNode } from 'react'
 
 interface Props {
   children: ReactNode
   joinCode?: string
+  numberOfPlayers?: number
+  hostDevices?: number
 }
 
-export default function GameInterface({ children, joinCode }: Props) {
+export default function GameInterface({
+  children,
+  joinCode,
+  numberOfPlayers,
+  hostDevices,
+}: Props) {
   return (
     <div className=' text-black h-full flex items-center flex-col justify-between py-16 gap-8 w-full relative'>
+      {numberOfPlayers !== undefined && (
+        <div className=' bg-muted/40  w-max bottom-3 h-max py-3 rounded-lg px-2 sm:text-sm flex items-center absolute left-8 text-white'>
+          <h3>
+            Connected players:
+            <span className='bg-muted/60 font-medium px-2 py-2 rounded-md'>
+              {numberOfPlayers}
+            </span>
+          </h3>
+        </div>
+      )}
       {joinCode && (
         <div className=' bg-muted/40  w-max top-3 h-max py-3 rounded-lg px-2 sm:text-sm flex items-center absolute text-white'>
           <h3>
             Join @ quiz.gxmecity.com | Use code{' '}
             <span className='bg-muted/60 font-medium px-2 py-2 rounded-md'>
-              {joinCode}
+              {splitCodeInHalf(joinCode)}
+            </span>
+          </h3>
+        </div>
+      )}
+      {hostDevices !== undefined && (
+        <div className=' bg-muted/40  w-max top-3 h-max py-3 rounded-lg px-2 sm:text-sm flex items-center absolute right-8 text-white'>
+          <h3>
+            Host devices:
+            <span className='bg-muted/60 font-medium px-2 py-2 rounded-md'>
+              {hostDevices}
             </span>
           </h3>
         </div>

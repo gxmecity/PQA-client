@@ -2,7 +2,7 @@ import { cn } from '@/lib/utils'
 import { useEffect } from 'react'
 
 interface Props {
-  questions: QuestionElement[]
+  questions: number
   answeredQuestions: number[]
   selectQuestion: (arg: number) => void
   endRound: () => void
@@ -39,7 +39,7 @@ export default function DealersOptions({
           to pick
         </p>
         <div className=' flex flex-auto w-full flex-wrap gap-4  items-center justify-center'>
-          {questions.map((_, index) => (
+          {Array.from({ length: questions }).map((_, index) => (
             <button
               type='button'
               key={index}

@@ -86,7 +86,7 @@ const QuestionQuestionSchema = z.object({
     })
     .optional(),
   multi_choice_options: z.array(z.string()).optional(),
-  standalone_asset: z.boolean().default(false),
+  standalone_media: z.boolean().default(false),
 })
 
 export const QuestionElementSchema = z.object({
@@ -133,4 +133,12 @@ export const createEventSchema = z.object({
   }),
   game: z.string(),
   scheduled_date: z.string(),
+})
+
+export const joinRoomSchema = z.object({
+  code: z
+    .string({
+      required_error: 'Enter a room code',
+    })
+    .min(8, 'Enter a valid room code'),
 })

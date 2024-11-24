@@ -3,14 +3,15 @@ import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
 
 interface Props {
-  data: QuestionElement
+  data: Question
   questionNumber: number
   timer: number
+  totalTime: number
   onTimeComplete: () => void
   shouldRevealAnswer: boolean
-  shouldCounntdown?: boolean
-  isLastQuestion: boolean
+  isLastQuestion?: boolean
   goToNext: () => void
+  shouldCountdown: boolean
 }
 
 export default function Question({
@@ -19,10 +20,10 @@ export default function Question({
   questionNumber,
   onTimeComplete,
   shouldRevealAnswer,
-  shouldCounntdown,
+  totalTime,
+  shouldCountdown,
   goToNext,
 }: Props) {
-  const [countDownn, setCountDownn] = useState(timer)
   const [animate, setAnimate] = useState(false)
 
   const handleKeyPress = (event: KeyboardEvent) => {
@@ -32,22 +33,6 @@ export default function Question({
   }
 
   useEffect(() => {
-    if (shouldCounntdown) {
-      if (countDownn > 0) {
-        const timerId = setInterval(() => {
-          setCountDownn((prevSeconds) => prevSeconds - 1)
-        }, 1000)
-
-        return () => clearInterval(timerId)
-      } else {
-        onTimeComplete()
-      }
-    }
-  }, [countDownn])
-
-  useEffect(() => {
-    setCountDownn(timer)
-
     if (!shouldRevealAnswer) setAnimate(true)
 
     const animationTimer = setTimeout(() => setAnimate(false), 700)
@@ -63,7 +48,7 @@ export default function Question({
     }
   }, [shouldRevealAnswer])
 
-  if (data.question.standalone_asset) return <></>
+  if (data.standalone_media) return <></>
 
   return (
     <>
@@ -77,15 +62,12 @@ export default function Question({
             <p className=' text-xl font-medium mb-3'>
               Question {questionNumber}
             </p>
-            <h1 className=' font-bold text-6xl'>
-              {data.question.question_text}
-            </h1>
+            <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
           </div>
-          {data.question.question_image && <div></div>}
         </div>
-        {data.question.question_type === 'multiple_choice' && (
+        {data.question_type === 'multiple_choice' && (
           <div className=' grid grid-cols-2 w-full max-w-5xl mx-auto py-6 gap-8'>
-            {data.question.multi_choice_options?.map(
+            {data.multi_choice_options?.map(
               (item) =>
                 item && (
                   <div className=' text-4xl rounded-md py-5 border border-black'>
@@ -96,9 +78,9 @@ export default function Question({
           </div>
         )}
 
-        {shouldCounntdown && !!countDownn && (
+        {timer > 0 && (
           <div className=' absolute bottom-0 right-0'>
-            <CircularProgress value={countDownn} total={timer} />
+            <CircularProgress value={timer} total={totalTime} />
           </div>
         )}
       </div>

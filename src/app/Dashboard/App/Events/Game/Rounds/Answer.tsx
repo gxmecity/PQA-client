@@ -2,7 +2,7 @@ import React, { useEffect } from 'react'
 
 type Prop = {
   data: Answer
-  isLastQuestion: boolean
+  isLastQuestion?: boolean
   goToNext: () => void
 }
 

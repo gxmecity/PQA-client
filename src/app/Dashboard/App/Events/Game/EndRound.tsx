@@ -1,10 +1,11 @@
 import React, { useEffect } from 'react'
 import Leaderboard from './Leaderboard'
+import { RoundLeaderboard } from './Game'
 
 interface Props {
   isLastRound: boolean
   RoundTitle: string
-  scores: { name: string; score: number; id: string }[]
+  scores: RoundLeaderboard
   nextStep: () => void
 }
 
@@ -36,7 +37,7 @@ export default function EndRound({
           <h1 className=' text-2xl font-semibold'>Standings - {RoundTitle}</h1>
           <span className=' h-[2px] bg-black flex-auto'></span>
         </div>
-        <Leaderboard scores={scores} />
+        {/* <Leaderboard scores={scores} /> */}
       </div>
       {isLastRound ? (
         <button className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'>

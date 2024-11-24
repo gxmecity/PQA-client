@@ -155,7 +155,7 @@ const QuestionItem = ({
               form={form}
               label='Standalone attachment'
               description='Show only attachment with no question text'
-              name={`questions[${index}].question.standalone_asset`}
+              name={`questions[${index}].question.standalone_media`}
             />
             <FormCheckbox
               form={form}

@@ -59,6 +59,7 @@ const FormInput = ({
                 placeholder={placeholder}
                 {...field}
                 type={fieldType}
+                inputMode={fieldType === 'number' ? 'tel' : undefined}
                 className=' focus-visible:ring-0 border-none rounded-none bg-transparent h-full px-0 placeholder:text-sm placeholder:text-muted-foreground placeholder:font-light'
               />
               {type === 'password' && (

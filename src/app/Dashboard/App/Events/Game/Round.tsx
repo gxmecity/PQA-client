@@ -1,72 +1,54 @@
-import { useRef, useState } from 'react'
-import RoundIntro from './RoundIntro'
-import { quizzes } from '@/data'
-import Trivia from './Rounds/Trivia'
-import Dealers from './Rounds/Dealers'
 import EndRound from './EndRound'
+import { RoundLeaderboard } from './Game'
+import RoundIntro from './RoundIntro'
+import Dealers from './Rounds/Dealers'
+import Trivia from './Rounds/Trivia'
 
 interface Props {
-  onQuizEnded: () => void
+  activeQuestionIndex: number | null
+  activeRoundIndex: number
+  startRoundFunction: () => void
+  round: Round
+  started: boolean
+  ended: boolean
+  scores: RoundLeaderboard[]
+  starting: boolean
+  seconds: number
+  isLastRound: boolean
+  nextFunction: () => void
+  onRoundEnded: () => void
 }
 
-export default function Round({ onQuizEnded }: Props) {
-  const quiz = quizzes[0]
-  const [started, setStarted] = useState(false)
-  const [ended, setEnded] = useState(false)
+export default function Round({
+  activeQuestionIndex,
+  activeRoundIndex,
+  startRoundFunction,
+  round,
+  scores,
+  seconds,
+  started,
+  starting,
+  isLastRound,
+  ended,
+  nextFunction,
+  onRoundEnded,
+}: Props) {
+  const roundComponents: any = {}
 
-  const [starting, setStarting] = useState(false)
-  const [seconds, setSeconds] = useState(5)
-  const timerRef = useRef<any>(null)
-  const [round, setRound] = useState(0)
-
-  const isLastRound = round === quiz.rounds.length - 1
-
-  const next = () => {
-    if (isLastRound) {
-      onQuizEnded()
-      return
-    }
-    setRound((prev) => prev + 1)
-    setStarted(false)
-    setEnded(false)
-  }
-
-  const roundComponents: any = {
-    trivia: (
-      <Trivia data={quiz.rounds[round]} onRoundEnded={() => setEnded(true)} />
-    ),
-    dealers_choice: (
-      <Dealers data={quiz.rounds[round]} onRoundEnded={() => setEnded(true)} />
-    ),
-  }
-
-  const startTimer = () => {
-    if (starting) return // Prevent multiple intervals
-
-    setStarting(true) // Set timer as active
-    setSeconds(5) // Reset the countdown to 5 seconds
-
-    // Set up interval
-    timerRef.current = setInterval(() => {
-      setSeconds((prevSeconds) => {
-        if (prevSeconds === 1) {
-          clearInterval(timerRef.current) // Clear interval at 0
-          setStarting(false) // Set timer as inactive
-          setStarted(true)
-          return 0
-        }
-        return prevSeconds - 1
-      })
-    }, 1000)
+  const roundLeaderboard = scores.find(
+    (round) => round.round === activeRoundIndex
+  ) ?? {
+    round: activeRoundIndex,
+    leaderboard: {},
   }
 
   if (ended)
     return (
       <EndRound
-        RoundTitle={quiz.rounds[round].round_name}
+        RoundTitle={round.round_name}
         isLastRound={isLastRound}
-        scores={[]}
-        nextStep={next}
+        scores={roundLeaderboard}
+        nextStep={nextFunction}
       />
     )
 
@@ -81,11 +63,8 @@ export default function Round({ onQuizEnded }: Props) {
 
   if (!started)
     return (
-      <RoundIntro
-        startTimer={startTimer}
-        title={quiz.rounds[round].round_name}
-      />
+      <RoundIntro startTimer={startRoundFunction} title={round.round_name} />
     )
 
-  return <>{roundComponents[quiz.rounds[round].round_type] || <></>}</>
+  return <>{roundComponents[round.round_type] || <></>}</>
 }
