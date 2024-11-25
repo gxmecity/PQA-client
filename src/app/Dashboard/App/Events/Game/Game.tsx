@@ -23,7 +23,12 @@ interface Props {
 
 export interface RoundLeaderboard {
   round: number
-  leaderboard: { [key: string]: number }
+  leaderboard: {
+    [key: string]: {
+      score: number
+      name: string
+    }
+  }
 }
 
 export type BonusLineup = Pick<Player, 'clientId' | 'name'>
@@ -130,7 +135,7 @@ export default function Game({ data }: Props) {
       roomChannel.publish('start-round', { round_started: true })
       if (activeRound.round_type === 'trivia') {
         await startTimer('start-round-timer', 5)
-        publishQuestion(0)
+        publishQuestion(0, msg.data.activeRound)
       }
       setStartingRound(false)
     })
@@ -139,15 +144,18 @@ export default function Game({ data }: Props) {
       setRevealAnswer(false)
       const prevQuestionIndex = msg.data.activeQuestion
       const nextQuestionIndex = prevQuestionIndex + 1
+      const roundIndex = msg.data.activeRound
       setGlobalGameState((prev) => ({
         ...prev,
         activeQuestionIndex: nextQuestionIndex,
       }))
       liveSyncWithHostDevice({ activeQuestionIndex: nextQuestionIndex })
-      publishQuestion(nextQuestionIndex)
+      publishQuestion(nextQuestionIndex, roundIndex)
     })
     hostChannel.subscribe('set-question-index', (msg) => {
       const nextQuestionIndex = msg.data.questionIndex
+      const activeRound = msg.data.activeRound
+      setRevealAnswer(false)
 
       if (nextQuestionIndex !== null) {
         setGlobalGameState((prev) => ({
@@ -161,7 +169,7 @@ export default function Game({ data }: Props) {
           bonusLineup: [],
           answeredQuestions: [nextQuestionIndex],
         })
-        publishQuestion(nextQuestionIndex)
+        publishQuestion(nextQuestionIndex, activeRound)
       } else {
         setGlobalGameState((prev) => ({
           ...prev,
@@ -293,9 +301,8 @@ export default function Game({ data }: Props) {
     })
   }
 
-  const publishQuestion = async (index: number) => {
-    const question =
-      quiz.rounds[globalGameState.activeRound].questions[index].question
+  const publishQuestion = async (index: number, roundIndex: number) => {
+    const question = quiz.rounds[roundIndex].questions[index].question
     await roomChannel.publish('new-question', {
       question,
       index,
@@ -318,7 +325,6 @@ export default function Game({ data }: Props) {
       avatar_url: player.data.avater,
       team_id: player.data.team_id,
       name: player.data.name,
-      is_online: true,
     }
     setGlobalGameState((prev) => ({
       ...prev,
@@ -327,7 +333,10 @@ export default function Game({ data }: Props) {
         round: item.round,
         leaderboard: {
           ...item.leaderboard,
-          [player.clientId]: 0,
+          [player.clientId]: {
+            score: 0,
+            name: player.data.name,
+          },
         },
       })),
     }))
@@ -388,8 +397,10 @@ export default function Game({ data }: Props) {
 
     if (!activeRoundLeaderBoard) return
 
-    activeRoundLeaderBoard.leaderboard[playerId] =
-      (activeRoundLeaderBoard.leaderboard[playerId] || 0) + point
+    activeRoundLeaderBoard.leaderboard[playerId] = {
+      score: (activeRoundLeaderBoard.leaderboard[playerId].score || 0) + point,
+      name: activeRoundLeaderBoard.leaderboard[playerId].name,
+    }
 
     setGlobalGameState((prev) => ({
       ...prev,
@@ -495,7 +506,7 @@ export default function Game({ data }: Props) {
           ended={globalGameState.round_ended}
           isLastRound={globalGameState.activeRound === quiz.rounds.length - 1}
           bonusLineup={globalGameState.bonusLineup}
-          dealingTeam={globalGameState.players[globalGameState.indexOfDealer]}
+          dealingTeams={globalGameState.players}
           startTimerFunction={startQuestionCountdownTimer}
           answeredQuestions={globalGameState.answeredQuestions}
         />

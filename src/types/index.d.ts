@@ -133,5 +133,4 @@ declare interface Player {
   team_id?: string
   clientId: string
   avatar_url?: string
-  is_online: boolean
 }

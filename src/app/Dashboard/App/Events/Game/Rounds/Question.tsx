@@ -1,7 +1,6 @@
 import CircularProgress from '@/components/CircularProgress'
 import { cn } from '@/lib/utils'
 import { useEffect, useState } from 'react'
-import { TypeAnimation } from 'react-type-animation'
 
 interface Props {
   data: Question
@@ -57,7 +56,16 @@ export default function Question({
     }
   }, [shouldRevealAnswer])
 
-  if (data.standalone_media) return <></>
+  if (data.standalone_media)
+    return (
+      <>
+        {timer > 0 && (
+          <div className=' absolute bottom-0 right-10'>
+            <CircularProgress value={timer} total={totalTime} />
+          </div>
+        )}
+      </>
+    )
 
   return (
     <>
@@ -102,7 +110,9 @@ export default function Question({
         onClick={goToNext}>
         Press{' '}
         <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
-        {shouldRevealAnswer ? 'to reveal answer' : 'for next question'}
+        {!shouldRevealAnswer || data.question_type === 'question_only'
+          ? 'for next question'
+          : 'to reveal answer'}
       </button>
     </>
   )

@@ -21,7 +21,7 @@ interface DealersChoiceProps {
   scores: RoundLeaderboard[]
   seconds: number
   bonusLineup: BonusLineup[]
-  dealingTeam: Player
+  dealingTeams: Player[]
   answeredQuestions: number[]
   startTimerFunction: (arg?: () => void) => void
 }
@@ -39,7 +39,7 @@ export default function Dealers({
   scores,
   seconds,
   bonusLineup,
-  dealingTeam,
+  dealingTeams,
   answeredQuestions,
   startTimerFunction,
 }: DealersChoiceProps) {
@@ -57,6 +57,7 @@ export default function Dealers({
     timerRef.current = setInterval(async () => {
       await hostChannel.publish('set-question-index', {
         questionIndex: arg,
+        activeRound: roundindex,
       })
       setTimer((prevSeconds) => {
         if (prevSeconds === 1) {
@@ -77,10 +78,29 @@ export default function Dealers({
 
   const goToNextRound = () => {
     if (isLastRound) {
+      console.log('last')
       hostChannel.publish('final-result', '')
     } else {
       hostChannel.publish('next-round', {
         activeRound: roundindex,
+      })
+    }
+  }
+
+  const goToNextQuestion = () => {
+    if (
+      activeQuestionIndex &&
+      round.questions[activeQuestionIndex].question.question_type ===
+        'question_only'
+    ) {
+      hostChannel.publish('set-question-index', {
+        questionIndex: null,
+        activeRound: roundindex,
+      })
+    } else {
+      hostChannel.publish('reveal-answer', {
+        activeRound: roundindex,
+        activeQuestion: activeQuestionIndex,
       })
     }
   }
@@ -90,6 +110,11 @@ export default function Dealers({
       playerId,
       isBonus,
       activeRound: roundindex,
+    })
+
+    hostChannel.publish('reveal-answer', {
+      activeRound: roundindex,
+      activeQuestion: activeQuestionIndex,
     })
   }
 
@@ -148,20 +173,20 @@ export default function Dealers({
       {!revealAnswer ? (
         <>
           <div className=' absolute right-5 bg-black/50 rounded-lg w-max px-5 text-white text-sm pb-5 min-w-40'>
-            <div className='py-3'>
-              <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
-                <span className=' flex-auto h-[1px] bg-white/60'></span>
-                <small>Point to:</small>
-                <span className=' flex-auto h-[1px] bg-white/60'></span>
-              </div>
-              <button
-                onClick={() => () =>
-                  awardPointToPlayer(dealingTeam.clientId, true)
-                }
-                className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left'>
-                {dealingTeam.name}
-              </button>
-            </div>
+            {/* <div className='py-3'>
+                <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
+                  <span className=' flex-auto h-[1px] bg-white/60'></span>
+                  <small>Point to:</small>
+                  <span className=' flex-auto h-[1px] bg-white/60'></span>
+                </div>
+                <button
+                  onClick={() => () =>
+                    awardPointToPlayer(dealingTeam.clientId, true)
+                  }
+                  className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left'>
+                  {dealingTeam.name}
+                </button>
+              </div> */}
             {!!bonusLineup.length && (
               <div className=' flex flex-col gap-3'>
                 <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
@@ -188,12 +213,7 @@ export default function Dealers({
             timer={seconds}
             questionNumber={activeQuestionIndex + 1}
             shouldRevealAnswer
-            goToNext={() => {
-              hostChannel.publish('reveal-answer', {
-                activeRound: roundindex,
-                activeQuestion: activeQuestionIndex,
-              })
-            }}
+            goToNext={goToNextQuestion}
             startTimer={startTimerFunction}
           />
         </>
@@ -203,6 +223,7 @@ export default function Dealers({
           goToNext={() => {
             hostChannel.publish('set-question-index', {
               questionIndex: null,
+              activeRound: roundindex,
             })
           }}
         />

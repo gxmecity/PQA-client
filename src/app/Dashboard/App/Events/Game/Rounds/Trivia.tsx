@@ -63,6 +63,7 @@ export default function Trivia({
       } else {
         hostChannel.publish('next-question', {
           activeQuestion: activeQuestionIndex,
+          activeRound: roundindex,
         })
       }
     }

@@ -31,7 +31,9 @@ export default function Answer({ data, isLastQuestion, goToNext }: Prop) {
         <span className=' h-20 w-20 bg-black absolute right-16'></span>
       )}
       {isLastQuestion ? (
-        <button className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'>
+        <button
+          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
+          onClick={goToNext}>
           Press{' '}
           <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
           end round
