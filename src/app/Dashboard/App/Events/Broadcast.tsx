@@ -15,6 +15,7 @@ import { useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import Game from './Game/Game'
 import EmptyState from '@/components/EmptyState'
+import AppLogo from '@/components/AppLogo'
 
 export interface GameEvent {
   event_data: QuizEvent
@@ -95,7 +96,9 @@ export function Component() {
             <h1 className=' font-bold text-2xl'>{data.title}</h1>
             <p className=''>Game Host: {data.creator.fullname}</p>
             <div className=' h-64 flex items-center justify-center'>
-              Logo here
+              <div className='w-72'>
+                <AppLogo variant='dark' />
+              </div>
             </div>
             <AppButton
               text='Create Quiz Room'

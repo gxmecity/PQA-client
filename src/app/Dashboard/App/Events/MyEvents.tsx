@@ -12,7 +12,7 @@ import {
   useGetUserHostedEventsQuery,
 } from '@/services/events'
 import { useGetUserCreatedQuizQuery } from '@/services/quiz'
-import { CalendarCheck, Clock, Play, Plus } from 'lucide-react'
+import { CalendarCheck, Clock, Dices, Play, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -117,22 +117,36 @@ export function Component() {
       </div>
       <AppDialog open={open} setOpen={setOpen} title='Select a Quiz to play'>
         <div className=' h-80 overflow-auto'>
-          {quizzes.map((quiz) => (
-            <div key={quiz._id} className=' flex justify-between items-center'>
-              <div>
-                <p className=' text-sm font-medium'>{quiz.title}</p>
-                <small className=' text-muted-foreground italic'>
-                  {quiz.rounds.length} rounds
-                </small>
-              </div>
-              <AppButton
-                icon={<Play />}
-                text='Play'
-                onClick={() => handleCreateNewEvent(quiz)}
-                loading={creatingEvent}
-              />
-            </div>
-          ))}
+          {loadingQuiz ? (
+            <Loader />
+          ) : quizzes.length ? (
+            <>
+              {quizzes.map((quiz) => (
+                <div
+                  key={quiz._id}
+                  className=' flex justify-between items-center'>
+                  <div>
+                    <p className=' text-sm font-medium'>{quiz.title}</p>
+                    <small className=' text-muted-foreground italic'>
+                      {quiz.rounds.length} rounds
+                    </small>
+                  </div>
+                  <AppButton
+                    icon={<Play />}
+                    text='Play'
+                    onClick={() => handleCreateNewEvent(quiz)}
+                    loading={creatingEvent}
+                  />
+                </div>
+              ))}
+            </>
+          ) : (
+            <EmptyState
+              title='No Quiz Added'
+              icon={<Dices size={40} className='text-primary' />}
+              description='Create new quiz to get started'
+            />
+          )}
         </div>
       </AppDialog>
     </div>

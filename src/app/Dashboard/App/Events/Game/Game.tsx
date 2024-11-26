@@ -16,6 +16,7 @@ import Dealers from './Rounds/Dealers'
 import FinalResultComponent from './FinalResultComponent'
 import { PresenceMessage } from 'ably'
 import { ablyClient } from '@/lib/ably'
+import AppLogo from '@/components/AppLogo'
 
 interface Props {
   data: GameEvent
@@ -451,7 +452,9 @@ export default function Game({ data }: Props) {
             <h1 className=' font-bold text-2xl'>{event_data.title}</h1>
             <p className=''>Game Host: {event_data.creator.fullname}</p>
             <div className=' h-64 flex items-center justify-center'>
-              Logo here
+              <div className='w-36'>
+                <AppLogo variant='dark' />
+              </div>
             </div>
             <AppButton
               text='Start Game'

@@ -1,7 +1,7 @@
 import AppButton from '@/components/AppButton'
+import AppLogo from '@/components/AppLogo'
 import FormInput from '@/components/FormInput'
 import { Form } from '@/components/ui/form'
-import React from 'react'
 import { useForm } from 'react-hook-form'
 
 export function Component() {
@@ -10,7 +10,9 @@ export function Component() {
   return (
     <section className=' flex-auto flex flex-col items-center justify-center relative'>
       <div className=' w-3/4 max-w-[400px] flex flex-col gap-6 items-center'>
-        <div>Logo here...</div>
+        <div className='w-26'>
+          <AppLogo />
+        </div>
         <div className=' text-center'>
           <h1 className=' text-3xl font-light'>Enter the code to join</h1>
           <small className=' text-muted-foreground'>

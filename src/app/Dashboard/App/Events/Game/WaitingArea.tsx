@@ -1,7 +1,6 @@
 import AppButton from '@/components/AppButton'
-import GameInterface from '@/components/GameInterface'
+import AppLogo from '@/components/AppLogo'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { Player } from './Game'
 
 interface Props {
   title: string
@@ -39,7 +38,9 @@ export default function WaitingArea({
           </div>
         ) : (
           <div className=' animate-pulse'>
-            <span>Logo Here</span>
+            <span className=' w-28'>
+              <AppLogo variant='dark' />
+            </span>
             <p>Waiting for players....</p>
           </div>
         )}
