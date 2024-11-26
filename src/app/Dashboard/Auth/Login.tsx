@@ -15,6 +15,7 @@ import { errorResponseHandler } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
 import image from '@/assets/Banner PQT.jpg'
 import AppLogo from '@/components/AppLogo'
+import Loader from '@/components/Loader'
 
 export function Component() {
   const { user } = useAppSelector((state) => state.auth)
@@ -47,7 +48,7 @@ export function Component() {
     }
   }
 
-  if (retrievingSession) return <>Loading...</>
+  if (retrievingSession) return <Loader />
 
   if (user) return <Navigate to='/dashboard' />
 
