@@ -2,6 +2,7 @@ import AppButton from '@/components/AppButton'
 import { AppSelect, SelectOptionType } from '@/components/AppSelect'
 import EmptyState from '@/components/EmptyState'
 import ErrorMessage from '@/components/ErrorMessage'
+import Loader from '@/components/Loader'
 import QuizItem from '@/components/QuizItem'
 import { Label } from '@/components/ui/label'
 import { useGetUserCreatedQuizQuery } from '@/services/quiz'
@@ -14,7 +15,6 @@ export function Component() {
     data = [],
     isLoading,
     isError,
-    error,
   } = useGetUserCreatedQuizQuery(undefined)
 
   const navigate = useNavigate()
@@ -65,7 +65,7 @@ export function Component() {
       <div className=' flex-auto'>
         <>
           {isLoading ? (
-            <></>
+            <Loader />
           ) : (
             <>
               {isError ? (

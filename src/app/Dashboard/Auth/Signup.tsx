@@ -1,4 +1,5 @@
 import AppButton from '@/components/AppButton'
+import AppLogo from '@/components/AppLogo'
 import FormCheckbox from '@/components/FormCheckbox'
 import FormInput from '@/components/FormInput'
 import { ModeToggle } from '@/components/ToggleTheme'
@@ -10,6 +11,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import { Link, useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
+import image from '@/assets/Banner PQT 2.jpg'
 
 export function Component() {
   const [signUpUser, { isLoading }] = useSignUpNewUserMutation()
@@ -44,16 +46,24 @@ export function Component() {
   }
 
   return (
-    <div className=' grid grid-cols-2 h-full md:flex md:justify-center'>
-      <div className='bg-card-foreground md:hidden'></div>
+    <div className=' grid grid-cols-[35%_65%] h-full md:flex md:justify-center'>
+      <div className='bg-card-foreground h-full overflow-hidden  md:hidden relative'>
+        <span className=' absolute w-24 top-5 left-5 z-40'>
+          <AppLogo variant='white' />
+        </span>
+        <img src={image} className=' w-full h-full' alt='' />
+        <div className=' top-0  absolute z-20 h-full w-full bg-gradient-to-b from-black/80 to-transparent'></div>
+      </div>
       <div className='flex items-center justify-center fex-col relative md:w-full py-5'>
         <div className=' absolute top-3 right-3'>
           <ModeToggle />
         </div>
         <div className=' w-full py-10 flex items-center justify-center'>
           <div className='w-4/5 max-w-[400px]'>
+            <span className='  w-24 mx-auto mb-5 hidden md:block'>
+              <AppLogo variant='white' />
+            </span>
             <h3 className='font-semibold text-2xl text-center'>
-              {' '}
               Create an account
             </h3>
             <p className='text-muted-foreground text-sm text-center'>

@@ -28,6 +28,7 @@ import {
   CollapsibleTrigger,
 } from './ui/collapsible'
 import { Button } from './ui/button'
+import AppLogo from './AppLogo'
 
 interface ListItem {
   children: any
@@ -40,7 +41,9 @@ export function NavigationMenuDemo() {
   return (
     <NavigationMenu className=' px-5 h-16 border-b border-b-border flex items-center gap-5 w-full max-w-full justify-start flex-none'>
       <MobileNav />
-      <a href='/'>The Pub Quiz</a>
+      <a href='/' className=' block w-20'>
+        <AppLogo />
+      </a>
       <NavigationMenuList className=' sm:hidden'>
         <NavigationMenuItem>
           <>
@@ -66,16 +69,13 @@ export function NavigationMenuDemo() {
                   A specific and ordered list of questions in rounds to use on
                   game events.
                 </ListItem>
-                <ListItem title='New Game Event' url=''>
-                  A hosted quiz game to present to a group of people for a
-                  perfect quiz night.
-                </ListItem>
-                {/* <ListItem url='/' title='New Series'>
-                  A collection of game events prepared to keep track of players
-                  lederboard over time.
-                </ListItem> */}
+
                 <ListItem url='/dashboard/teams' title='Register Team'>
                   Register a new team to participate in your events
+                </ListItem>
+                <ListItem url='/' title='New Series'>
+                  A collection of game events prepared to keep track of players
+                  lederboard over time.
                 </ListItem>
               </ul>
             </NavigationMenuContent>

@@ -8,7 +8,7 @@ import { BonusLineup, RoundLeaderboard } from '../Game'
 import EndRound from '../EndRound'
 import RoundIntro from '../RoundIntro'
 
-interface DealersChoiceProps {
+export interface DealersChoiceProps {
   activeQuestionIndex: number | null
   roundindex: number
   round: Round
@@ -78,7 +78,6 @@ export default function Dealers({
 
   const goToNextRound = () => {
     if (isLastRound) {
-      console.log('last')
       hostChannel.publish('final-result', '')
     } else {
       hostChannel.publish('next-round', {

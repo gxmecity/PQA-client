@@ -4,6 +4,8 @@ import { splitCodeInHalf } from '@/lib/utils'
 interface Props {
   broadcast: boolean
   startBroadCast: () => void
+  startQuiz: () => void
+
   joinCode: string
 }
 
@@ -11,6 +13,7 @@ export default function WaitingArea({
   broadcast,
   startBroadCast,
   joinCode,
+  startQuiz,
 }: Props) {
   return (
     <section className=' h-full'>
@@ -79,8 +82,7 @@ export default function WaitingArea({
                 text='Start Quiz'
                 classname=' h-12 mt-8 font-bold w-full max-w-[200px]  text-primary border-primary'
                 variant='outline'
-                onClick={() => {}}
-                disabled
+                onClick={startQuiz}
               />
             </>
           )}

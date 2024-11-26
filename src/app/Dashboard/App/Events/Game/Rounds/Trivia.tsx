@@ -5,7 +5,7 @@ import { RoundLeaderboard } from '../Game'
 import EndRound from '../EndRound'
 import RoundIntro from '../RoundIntro'
 
-interface TriviaProps {
+export interface TriviaProps {
   activeQuestionIndex: number
   roundindex: number
   round: Round

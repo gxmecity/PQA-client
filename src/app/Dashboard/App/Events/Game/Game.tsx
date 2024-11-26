@@ -45,8 +45,9 @@ export interface GameState {
   activeQuestionIndex: number | null
   roomOpen: boolean
   canRevealAnswer: boolean
+  revealAnswer: boolean
   bonusLineup: BonusLineup[]
-  indexOfDealer: number
+  dealer: Player | null
   answeredQuestions: number[]
 }
 
@@ -57,10 +58,8 @@ export default function Game({ data }: Props) {
     quiz,
   } = data
   const [open, setOpen] = useState(true)
-  const [skipTimer, setSkipTimer] = useState(false)
   const [seconds, setSeconds] = useState(0)
   const [startingRound, setStartingRound] = useState(false)
-  const [revealAnswer, setRevealAnswer] = useState(false)
   const [
     finalLeaderboardShowPoitionIndex,
     setFinalLeaderboardShowPoitionIndex,
@@ -83,8 +82,9 @@ export default function Game({ data }: Props) {
     activeQuestionIndex: null,
     roomOpen: false,
     canRevealAnswer: false,
+    revealAnswer: false,
     bonusLineup: [],
-    indexOfDealer: 0,
+    dealer: null,
     answeredQuestions: [],
   })
 
@@ -98,12 +98,15 @@ export default function Game({ data }: Props) {
       setGlobalGameState((prev) => ({ ...prev, roomOpen: msg.data.open }))
     })
     hostChannel.subscribe('start-quiz', () => {
-      setGlobalGameState((prev) => ({
-        ...prev,
-        quiz_started: true,
-        activeRound: 0,
-      }))
-      liveSyncWithHostDevice({ quiz_started: true, activeRound: 0 })
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          quiz_started: true,
+          activeRound: 0,
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       roomChannel.publish('quiz-started', {
         quiz_started: true,
         round: {
@@ -116,22 +119,19 @@ export default function Game({ data }: Props) {
     })
     hostChannel.subscribe('start-round', async (msg) => {
       const activeRound = quiz.rounds[msg.data.activeRound]
-      setGlobalGameState((prev) => ({
-        ...prev,
-        round_started: true,
-        canRevealAnswer: false,
-        indexOfDealer: 0,
-        activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
-        answeredQuestions: [],
-      }))
-      setStartingRound(true)
-      liveSyncWithHostDevice({
-        round_started: true,
-        canRevealAnswer: false,
-        indexOfDealer: 0,
-        activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
-        answeredQuestions: [],
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          round_started: true,
+          canRevealAnswer: false,
+          dealer: prev.players[0],
+          activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
+          answeredQuestions: [],
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
       })
+      setStartingRound(true)
       roomChannel.publish('start-round', { round_started: true })
       if (activeRound.round_type === 'trivia') {
         await startTimer('start-round-timer', 5)
@@ -140,63 +140,73 @@ export default function Game({ data }: Props) {
       setStartingRound(false)
     })
     hostChannel.subscribe('next-question', (msg) => {
-      setSkipTimer(false)
-      setRevealAnswer(false)
       const prevQuestionIndex = msg.data.activeQuestion
       const nextQuestionIndex = prevQuestionIndex + 1
       const roundIndex = msg.data.activeRound
-      setGlobalGameState((prev) => ({
-        ...prev,
-        activeQuestionIndex: nextQuestionIndex,
-      }))
-      liveSyncWithHostDevice({ activeQuestionIndex: nextQuestionIndex })
+      setGlobalGameState((prev) => {
+        const updatedState: GameState = {
+          ...prev,
+          revealAnswer: false,
+          activeQuestionIndex: nextQuestionIndex,
+        }
+
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       publishQuestion(nextQuestionIndex, roundIndex)
     })
     hostChannel.subscribe('set-question-index', (msg) => {
       const nextQuestionIndex = msg.data.questionIndex
       const activeRound = msg.data.activeRound
-      setRevealAnswer(false)
 
       if (nextQuestionIndex !== null) {
-        setGlobalGameState((prev) => ({
-          ...prev,
-          activeQuestionIndex: nextQuestionIndex,
-          bonusLineup: [],
-          answeredQuestions: [...prev.answeredQuestions, nextQuestionIndex],
-        }))
-        liveSyncWithHostDevice({
-          activeQuestionIndex: nextQuestionIndex,
-          bonusLineup: [],
-          answeredQuestions: [nextQuestionIndex],
+        setGlobalGameState((prev) => {
+          const updatedState: GameState = {
+            ...prev,
+            revealAnswer: false,
+            activeQuestionIndex: nextQuestionIndex,
+            bonusLineup: [],
+            answeredQuestions: [...prev.answeredQuestions, nextQuestionIndex],
+          }
+          liveSyncWithHostDevice(updatedState)
+          return updatedState
         })
         publishQuestion(nextQuestionIndex, activeRound)
       } else {
-        setGlobalGameState((prev) => ({
-          ...prev,
-          activeQuestionIndex: nextQuestionIndex,
-          bonusLineup: [],
-        }))
-        liveSyncWithHostDevice({
-          activeQuestionIndex: nextQuestionIndex,
-          bonusLineup: [],
+        setGlobalGameState((prev) => {
+          const updatedState = {
+            ...prev,
+            activeQuestionIndex: nextQuestionIndex,
+            bonusLineup: [],
+          }
+          liveSyncWithHostDevice(updatedState)
+          return updatedState
         })
       }
 
       roomChannel.publish('allow-bonus', { allowBonus: false })
     })
     hostChannel.subscribe('start-answer-reveal', () => {
-      setGlobalGameState((prev) => ({
-        ...prev,
-        canRevealAnswer: true,
-        activeQuestionIndex: 0,
-      }))
-      liveSyncWithHostDevice({
-        canRevealAnswer: true,
-        activeQuestionIndex: 0,
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          canRevealAnswer: true,
+          activeQuestionIndex: 0,
+        }
+        liveSyncWithHostDevice(updatedState)
+
+        return updatedState
       })
     })
     hostChannel.subscribe('reveal-answer', (msg) => {
-      setRevealAnswer(true)
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          revealAnswer: true,
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       roomChannel.publish('correct-answer', {
         answer:
           quiz.rounds[msg.data.activeRound].questions[msg.data.activeQuestion]
@@ -211,24 +221,25 @@ export default function Game({ data }: Props) {
       )
     })
     hostChannel.subscribe('end-round', async () => {
-      setGlobalGameState((prev) => ({ ...prev, round_ended: true }))
-      liveSyncWithHostDevice({ round_ended: true })
-      setRevealAnswer(false)
+      setGlobalGameState((prev) => {
+        const updatedState = { ...prev, round_ended: true, revealAnswer: false }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       roomChannel.publish('round-ended', { round_ended: true })
     })
     hostChannel.subscribe('next-round', (msg) => {
       const currentRound = msg.data.activeRound
       const nextRound = currentRound + 1
-      setGlobalGameState((prev) => ({
-        ...prev,
-        activeRound: nextRound,
-        round_ended: false,
-        round_started: false,
-      }))
-      liveSyncWithHostDevice({
-        activeRound: nextRound,
-        round_ended: false,
-        round_started: false,
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          activeRound: nextRound,
+          round_ended: false,
+          round_started: false,
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
       })
       roomChannel.publish('next-round', {
         round: {
@@ -240,8 +251,12 @@ export default function Game({ data }: Props) {
       })
     })
     hostChannel.subscribe('final-result', () => {
-      setGlobalGameState((prev) => ({ ...prev, quiz_ended: true }))
-      liveSyncWithHostDevice({ quiz_ended: true })
+      setGlobalGameState((prev) => {
+        const updatedState = { ...prev, quiz_ended: true }
+
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
     })
     hostChannel.subscribe('leaderboard-next', () => {
       setFinalLeaderboardShowPoitionIndex((prev) =>
@@ -253,20 +268,27 @@ export default function Game({ data }: Props) {
 
   useEffect(() => {
     hostChannel.presence.subscribe('enter', (remote) => {
-      setGlobalGameState((prev) => ({
-        ...prev,
-        remoteHostDevices: prev.remoteHostDevices + 1,
-      }))
-      liveSyncWithHostDevice(globalGameState)
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          remoteHostDevices: prev.remoteHostDevices + 1,
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       toast.success('Remote Device Connected', {
         description: `Device ${remote.clientId} joined as a remote host`,
       })
     })
     hostChannel.presence.subscribe('leave', (remote) => {
-      setGlobalGameState((prev) => ({
-        ...prev,
-        remoteHostDevices: prev.remoteHostDevices - 1,
-      }))
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          remoteHostDevices: prev.remoteHostDevices - 1,
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
       toast.success('Remote Device Disconnected', {
         description: `Device ${remote.clientId} disconnected as a remote host`,
       })
@@ -286,13 +308,15 @@ export default function Game({ data }: Props) {
       setSeconds(countdown)
       await roomChannel.publish(event, {
         countDownSec: countdown,
+        timerType: event,
       })
       await new Promise((resolve) => setTimeout(resolve, 1000))
       countdown -= 1
-      if (event === 'question-timer' && skipTimer) break
     }
 
-    await roomChannel.publish('timer-ended', { message: 'Time is up!' })
+    if (event === 'question-timer') {
+      await roomChannel.publish('timer-ended', { message: 'Time is up!' })
+    }
   }
 
   const openQuizRoomManually = () => {
@@ -307,8 +331,11 @@ export default function Game({ data }: Props) {
       question,
       index,
     })
-    liveSyncWithHostDevice({ activeQuestionIndex: index })
-    setGlobalGameState((prev) => ({ ...prev, activeQuestionIndex: index }))
+    setGlobalGameState((prev) => {
+      const updatedState = { ...prev, activeQuestionIndex: index }
+      liveSyncWithHostDevice(updatedState)
+      return updatedState
+    })
   }
 
   const startQuestionCountdownTimer = async (callback?: () => void) => {
@@ -321,27 +348,31 @@ export default function Game({ data }: Props) {
 
   const handleNewPlayerJoined = (player: PresenceMessage) => {
     const newPlayerData: Player = {
-      clientId: player.clientId,
+      clientId: player.data.clientId,
       avatar_url: player.data.avater,
       team_id: player.data.team_id,
       name: player.data.name,
     }
-    setGlobalGameState((prev) => ({
-      ...prev,
-      players: [...prev.players, newPlayerData],
-      leaderboard: prev.leaderboard.map((item) => ({
-        round: item.round,
-        leaderboard: {
-          ...item.leaderboard,
-          [player.clientId]: {
-            score: 0,
-            name: player.data.name,
+    setGlobalGameState((prev) => {
+      const updatedState = {
+        ...prev,
+        players: [...prev.players, newPlayerData],
+        leaderboard: prev.leaderboard.map((item) => ({
+          round: item.round,
+          leaderboard: {
+            ...item.leaderboard,
+            [player.clientId]: item.leaderboard[player.clientId] ?? {
+              score: 0,
+              name: player.data.name,
+            },
           },
-        },
-      })),
-    }))
+        })),
+      }
+      liveSyncWithHostDevice(updatedState)
+      return updatedState
+    })
     const playerChannel = ablyClient.channels.get(
-      `${event_data.entry_code}:player-${player.clientId}`
+      `${event_data.entry_code}:player-${player.data.clientId}`
     )
 
     playerChannel.subscribe('submit-answer', (msg) => {
@@ -365,23 +396,19 @@ export default function Game({ data }: Props) {
     })
 
     playerChannel.subscribe('request-bonus', (msg) => {
-      setGlobalGameState((prev) => ({
-        ...prev,
-        bonusLineup: [
-          ...prev.bonusLineup,
-          {
-            clientId: msg.clientId!,
-            name: msg.data.name,
-          },
-        ],
-      }))
-      liveSyncWithHostDevice({
-        bonusLineup: [
-          {
-            clientId: msg.clientId!,
-            name: msg.data.name,
-          },
-        ],
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          bonusLineup: [
+            ...prev.bonusLineup,
+            {
+              clientId: msg.clientId!,
+              name: msg.data.name,
+            },
+          ],
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
       })
     })
   }
@@ -402,10 +429,14 @@ export default function Game({ data }: Props) {
       name: activeRoundLeaderBoard.leaderboard[playerId].name,
     }
 
-    setGlobalGameState((prev) => ({
-      ...prev,
-      leaderboard: [...prev.leaderboard, activeRoundLeaderBoard],
-    }))
+    setGlobalGameState((prev) => {
+      const updatedState = {
+        ...prev,
+        leaderboard: [...prev.leaderboard, activeRoundLeaderBoard],
+      }
+      liveSyncWithHostDevice(updatedState)
+      return updatedState
+    })
   }
 
   const publishPlayerScoresToPlayerChannels = async () => {}
@@ -479,7 +510,7 @@ export default function Game({ data }: Props) {
           hostChannel={hostChannel}
           round={quiz.rounds[globalGameState.activeRound]}
           canRevealAnswer={globalGameState.canRevealAnswer}
-          revealAnswer={revealAnswer}
+          revealAnswer={globalGameState.revealAnswer}
           scores={globalGameState.leaderboard}
           seconds={seconds}
           started={globalGameState.round_started}
@@ -499,7 +530,7 @@ export default function Game({ data }: Props) {
           hostChannel={hostChannel}
           roomChannel={roomChannel}
           round={quiz.rounds[globalGameState.activeRound]}
-          revealAnswer={revealAnswer}
+          revealAnswer={globalGameState.revealAnswer}
           scores={globalGameState.leaderboard}
           seconds={seconds}
           started={globalGameState.round_started}

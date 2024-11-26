@@ -1,4 +1,5 @@
 import AppButton from '@/components/AppButton'
+import AppLogo from '@/components/AppLogo'
 import FormInput from '@/components/FormInput'
 import { Form } from '@/components/ui/form'
 import { errorResponseHandler } from '@/lib/utils'
@@ -34,9 +35,11 @@ export default function Join({ setEvent }: Props) {
 
   return (
     <section className=' flex-auto flex flex-col items-center justify-center relative'>
-      <div className=' w-3/4 max-w-[400px] flex flex-col gap-6 items-center'>
-        <div>Logo here...</div>
+      <div className=' w-3/4 max-w-[400px] h-full pt-20 justify-around  flex flex-col gap-6 items-center'>
         <div className=' text-center'>
+          <div className=' w-28 mx-auto mb-5'>
+            <AppLogo />
+          </div>
           <h1 className=' text-3xl font-light'>Enter the code to join</h1>
           <small className=' text-muted-foreground'>
             It's on the screen in front of you
@@ -61,13 +64,12 @@ export default function Join({ setEvent }: Props) {
             </div>
           </form>
         </Form>
+        <small className=' text-muted-foreground  text-xs max-w-[300px] text-center'>
+          By using PQA you accept our{' '}
+          <span className=' text-primary cursor-pointer'>terms of use </span>and{' '}
+          <span className=' text-primary cursor-pointer'>policies</span>.
+        </small>
       </div>
-
-      <small className=' text-muted-foreground absolute bottom-5 text-xs max-w-[300px] text-center'>
-        By using PQA you accept our{' '}
-        <span className=' text-primary cursor-pointer'>terms of use </span>and{' '}
-        <span className=' text-primary cursor-pointer'>policies</span>.
-      </small>
     </section>
   )
 }

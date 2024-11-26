@@ -1,13 +1,23 @@
 import Loader from '@/components/Loader'
+import { useAppSelector } from '@/redux/store'
+import { useRetrieveUserSessionQuery } from '@/services/auth'
 import { useGetEventByHostCodeQuery } from '@/services/events'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import Game from './Game'
 import Join from './Join'
+import Login from './Login'
 
 export function Component() {
   const [params] = useSearchParams()
   const roomCode = params.get('roomCode')
+  const { user } = useAppSelector((state) => state.auth)
+  const { isLoading: retrievingSession } = useRetrieveUserSessionQuery(
+    undefined,
+    {
+      skip: user !== undefined,
+    }
+  )
 
   const { data, isLoading } = useGetEventByHostCodeQuery(roomCode!, {
     skip: !roomCode,
@@ -21,7 +31,7 @@ export function Component() {
     }
   }, [data])
 
-  if (isLoading) return <Loader />
+  if (isLoading || retrievingSession) return <Loader />
 
   if (!event)
     return (
@@ -30,9 +40,11 @@ export function Component() {
       </main>
     )
 
+  if (!user) return <Login />
+
   return (
     <main className=' h-full flex flex-col items-center'>
-      <Game data={event} />
+      <Game data={event} user={user} />
     </main>
   )
 }

@@ -1,7 +1,9 @@
 import AppButton from '@/components/AppButton'
 import AppDialog from '@/components/AppDialog'
 import { AppSelect, SelectOptionType } from '@/components/AppSelect'
+import EmptyState from '@/components/EmptyState'
 import EventItem from '@/components/EventItem'
+import Loader from '@/components/Loader'
 import { Label } from '@/components/ui/label'
 import { errorResponseHandler } from '@/lib/utils'
 import { useAppSelector } from '@/redux/store'
@@ -10,7 +12,7 @@ import {
   useGetUserHostedEventsQuery,
 } from '@/services/events'
 import { useGetUserCreatedQuizQuery } from '@/services/quiz'
-import { Clock, Play, Plus } from 'lucide-react'
+import { CalendarCheck, Clock, Play, Plus } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 
@@ -89,13 +91,29 @@ export function Component() {
         />
       </div>
 
-      <div>
-        <Label className=' my-6 block'>My Events (08)</Label>
-        <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
-          {events.map((event) => (
-            <EventItem key={event._id} event={event} />
-          ))}
-        </div>
+      <div className=' flex-auto'>
+        {loadingEvents ? (
+          <Loader />
+        ) : (
+          <>
+            {events.length ? (
+              <>
+                <Label className=' my-6 block'>My Events (08)</Label>
+                <div className='grid gap-3 grid-cols-4 md:grid-cols-2 sm:grid-cols-1'>
+                  {events.map((event) => (
+                    <EventItem key={event._id} event={event} />
+                  ))}
+                </div>
+              </>
+            ) : (
+              <EmptyState
+                title='No Events Created'
+                icon={<CalendarCheck size={40} className='text-primary' />}
+                description='Create ann event to get started'
+              />
+            )}
+          </>
+        )}
       </div>
       <AppDialog open={open} setOpen={setOpen} title='Select a Quiz to play'>
         <div className=' h-80 overflow-auto'>
