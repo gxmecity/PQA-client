@@ -71,7 +71,7 @@ export default function Question({
     <>
       <div
         className={cn(
-          'flex h-full justify-center items-center  relative',
+          'flex h-full justify-center items-center',
           animate ? 'slide-in-elliptic-top-fwd' : ''
         )}>
         <div className=' h-full w-full flex justify-center flex-col max-w-7xl mx-auto gap-16'>
@@ -82,7 +82,9 @@ export default function Question({
               </p>
               <div>
                 <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
-                {/* {!data.standalone_media && data.question_media?.url} */}
+                {!data.standalone_media && data.question_media?.url && (
+                  <div></div>
+                )}
               </div>
             </div>
           </div>
@@ -103,16 +105,16 @@ export default function Question({
         </div>
 
         {timer > 0 && (
-          <div className=' absolute bottom-0 right-10'>
+          <div className=' absolute bottom-20 right-10'>
             <CircularProgress value={timer} total={totalTime} />
           </div>
         )}
       </div>
       <button
-        className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
+        className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-black/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
         onClick={goToNext}>
         Press{' '}
-        <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
+        <span className='bg-black/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
         {!shouldRevealAnswer || data.question_type === 'question_only'
           ? 'for next question'
           : 'to reveal answer'}

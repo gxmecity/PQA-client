@@ -7,6 +7,7 @@ import { RealtimeChannel } from 'ably'
 import { BonusLineup, RoundLeaderboard } from '../Game'
 import EndRound from '../EndRound'
 import RoundIntro from '../RoundIntro'
+import { AnimatedList } from '@/components/ui/animated-list'
 
 export interface DealersChoiceProps {
   activeQuestionIndex: number | null
@@ -194,14 +195,17 @@ export default function Dealers({
                   <small>Bonus to:</small>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                 </div>
-                {bonusLineup.map((player, index) => (
-                  <button
-                    key={index}
-                    onClick={() => awardPointToPlayer(player.clientId, true)}
-                    className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
-                    <Hand size={18} className='text-primary' /> {player.name}
-                  </button>
-                ))}
+                <AnimatedList>
+                  {bonusLineup.map((player, index) => (
+                    <button
+                      key={index}
+                      onClick={() => awardPointToPlayer(player.clientId, true)}
+                      className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
+                      {index + 1} <Hand size={18} className='text-primary' />{' '}
+                      {player.name}
+                    </button>
+                  ))}
+                </AnimatedList>
               </div>
             </div>
           )}

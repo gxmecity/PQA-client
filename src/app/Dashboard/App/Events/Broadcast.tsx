@@ -97,7 +97,7 @@ export function Component() {
             <p className=''>Game Host: {data.creator.fullname}</p>
             <div className=' h-64 flex items-center justify-center'>
               <div className='w-72'>
-                <AppLogo variant='dark' />
+                <AppLogo variant='white' />
               </div>
             </div>
             <AppButton

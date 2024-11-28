@@ -72,6 +72,8 @@ export default function SelectTeam({ event, setPlayer }: Props) {
   }) => {
     setPlayer({
       name: passphrase,
+      team_id: '',
+      avatar: '',
     })
     toast.success(`Joined Quiz Event ${event.entry_code}`)
   }

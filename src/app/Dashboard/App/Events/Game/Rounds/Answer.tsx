@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import blackbox from '@/assets/Black Box PQT.png'
 
 type Prop = {
   data: Answer
@@ -28,22 +29,24 @@ export default function Answer({ data, isLastQuestion, goToNext }: Prop) {
         <h1 className=' font-bold text-6xl'>{data.answer_text}</h1>
       </div>
       {!data.is_blackbox && (
-        <span className=' h-20 w-20 bg-black absolute right-16'></span>
+        <span className=' h-32 w-32 absolute bottom-0 right-16'>
+          <img src={blackbox} alt='blackbox' />
+        </span>
       )}
       {isLastQuestion ? (
         <button
-          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
+          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-black/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
           onClick={goToNext}>
           Press{' '}
-          <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
+          <span className='bg-black/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
           end round
         </button>
       ) : (
         <button
-          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-muted/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
+          className='absolute bottom-5 lef-1/2 -translate-x-1/2 bg-black/40 text-white px-2 rounded-md py-2 text-sm animate-pulse'
           onClick={goToNext}>
           Press{' '}
-          <span className='bg-muted/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
+          <span className='bg-black/60 font-medium p-1 rounded-sm'>Enter</span>{' '}
           for next question
         </button>
       )}

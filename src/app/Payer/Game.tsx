@@ -50,7 +50,6 @@ export default function Game({ data, user }: Props) {
   const subscribeToRoomChannels = () => {
     playerChannel.subscribe('sync-state', (msg) => {
       setGameState(msg.data.gameState)
-      console.log('state sync', msg.data)
     })
     roomChannel.subscribe('start-quiz', (msg) => {
       setGameState((prev) => ({
@@ -179,7 +178,7 @@ export default function Game({ data, user }: Props) {
   if (gameState.round.round_ended)
     return (
       <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
-        <p className='text-lg text-primary'>Round Ended</p>
+        <p className='text-lg text-primary font-bold'>Round Ended</p>
         <p>Waiting for next round</p>
         <small className=' text-muted-foreground'>
           Check the main screen to see your score..

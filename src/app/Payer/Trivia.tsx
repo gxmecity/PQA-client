@@ -100,7 +100,9 @@ export default function Trivia({
 
             {question.question_type === 'open_question' && (
               <Form {...openAnsweForm}>
-                <form onSubmit={openAnsweForm.handleSubmit(openAnswerSubmit)}>
+                <form
+                  className=' flex flex-col gap-4'
+                  onSubmit={openAnsweForm.handleSubmit(openAnswerSubmit)}>
                   <FormInput
                     form={openAnsweForm}
                     name='passphrase'
@@ -111,7 +113,7 @@ export default function Trivia({
                     text='Submit'
                     type='submit'
                     classname='w-max mx-auto'
-                    disabled={allowAnswer}
+                    disabled={!allowAnswer}
                   />
                 </form>
               </Form>
