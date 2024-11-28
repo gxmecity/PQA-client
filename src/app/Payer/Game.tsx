@@ -167,12 +167,22 @@ export default function Game({ data, user }: Props) {
       </div>
     )
 
-  if (!gameState.round || gameState.round.round_ended)
+  if (!gameState.round)
     return (
       <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
         <p>Waiting for next round</p>
         <small className=' text-muted-foreground'>
           The quiz master has not started the next round. please wait...
+        </small>
+      </div>
+    )
+  if (gameState.round.round_ended)
+    return (
+      <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
+        <p className='text-lg text-primary'>Round Ended</p>
+        <p>Waiting for next round</p>
+        <small className=' text-muted-foreground'>
+          Check the main screen to see your score..
         </small>
       </div>
     )

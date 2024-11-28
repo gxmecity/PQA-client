@@ -2,23 +2,18 @@ import logoBlack from '@/assets/PQTLogoBlack.png'
 import logoWhite from '@/assets/PQTLogoWhite.png'
 import clsx from 'clsx'
 
-export default function AppLogo({ variant }: { variant?: 'white' | 'dark' }) {
+const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches
+  ? 'dark'
+  : 'light'
+
+export default function AppLogo({
+  variant = systemTheme,
+}: {
+  variant?: string
+}) {
   return (
     <span>
-      <img
-        className={clsx(variant === 'dark' ? 'block' : 'dark:hidden')}
-        src={logoBlack}
-      />
-      <img
-        src={logoWhite}
-        className={clsx(
-          !variant
-            ? 'dark:block hidden'
-            : variant === 'white'
-              ? 'block'
-              : 'hidden'
-        )}
-      />
+      <img src={variant === 'white' ? logoWhite : logoBlack} alt='app logo' />
     </span>
   )
 }
