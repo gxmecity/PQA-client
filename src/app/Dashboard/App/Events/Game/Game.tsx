@@ -566,7 +566,7 @@ export default function Game({ data }: Props) {
       numberOfPlayers={globalGameState.players.length}
       hostDevices={globalGameState.remoteHostDevices}>
       {globalGameState.quiz_ended ? (
-        <FinalResultComponent />
+        <FinalResultComponent scores={globalGameState.leaderboard} />
       ) : !globalGameState.quiz_started ? (
         <WaitingArea
           joinedPlayers={globalGameState.players}
