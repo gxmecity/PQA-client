@@ -1,10 +1,12 @@
 import AppButton from '@/components/AppButton'
 import CircularProgress from '@/components/CircularProgress'
-import { Input } from '@/components/ui/input'
-import React, { useState } from 'react'
-import { PlayerRound } from './Game'
-import { RealtimeChannel } from 'ably'
+import FormInput from '@/components/FormInput'
 import { Form } from '@/components/ui/form'
+import { playerSelectTeamSchema } from '@/schemas'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { useEffect, useState } from 'react'
+import { SubmitHandler, useForm } from 'react-hook-form'
+import { PlayerRound } from './Game'
 
 interface Props {
   round: PlayerRound
@@ -22,9 +24,31 @@ export default function Trivia({
   const [allowAnswer, setallowAnswer] = useState<boolean>(true)
 
   const handleAnswerSubmit = (ans: string) => {
-    submitAnswer(ans)
     setallowAnswer(false)
+    submitAnswer(ans)
   }
+  const openAnsweForm = useForm({
+    resolver: zodResolver(playerSelectTeamSchema),
+    defaultValues: {
+      passphrase: '',
+    },
+  })
+
+  const openAnswerSubmit: SubmitHandler<{ passphrase: string }> = async ({
+    passphrase,
+  }) => {
+    handleAnswerSubmit(passphrase)
+  }
+
+  useEffect(() => {
+    setallowAnswer(true)
+  }, [question])
+
+  useEffect(() => {
+    if (seconds < 1) {
+      setallowAnswer(false)
+    }
+  }, [seconds])
 
   return (
     <div className=' h-full w-full flex gap-10 flex-col pt-2  pb-5'>
@@ -42,7 +66,7 @@ export default function Trivia({
         )}
       </div>
 
-      {allowAnswer && (
+      {allowAnswer ? (
         <div>
           <div className=' flex flex-col gap-3'>
             {question.question_type === 'multiple_choice' &&
@@ -75,12 +99,31 @@ export default function Trivia({
             )}
 
             {question.question_type === 'open_question' && (
-              <>
-                <Input className=' h-12' placeholder='your answer here...' />
-                <AppButton text='Submit' classname='w-max mx-auto' />
-              </>
+              <Form {...openAnsweForm}>
+                <form onSubmit={openAnsweForm.handleSubmit(openAnswerSubmit)}>
+                  <FormInput
+                    form={openAnsweForm}
+                    name='passphrase'
+                    type='text'
+                    placeholder='your answer here...'
+                  />
+                  <AppButton
+                    text='Submit'
+                    type='submit'
+                    classname='w-max mx-auto'
+                    disabled={allowAnswer}
+                  />
+                </form>
+              </Form>
             )}
           </div>
+        </div>
+      ) : (
+        <div className=' flex-auto flex items-center justify-center flex-col'>
+          <p>Answer submitted.</p>
+          <small className='text-muted-foreground'>
+            waiting for next question...
+          </small>
         </div>
       )}
       {seconds > 0 && (

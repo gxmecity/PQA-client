@@ -18,7 +18,7 @@ export interface DealersChoiceProps {
   roomChannel: RealtimeChannel
   started: boolean
   ended: boolean
-  scores: RoundLeaderboard[]
+  scores: RoundLeaderboard
   seconds: number
   bonusLineup: BonusLineup[]
   dealingTeams: Player[]
@@ -88,7 +88,7 @@ export default function Dealers({
 
   const goToNextQuestion = () => {
     if (
-      activeQuestionIndex &&
+      activeQuestionIndex !== null &&
       round.questions[activeQuestionIndex].question.question_type ===
         'question_only'
     ) {
@@ -111,25 +111,21 @@ export default function Dealers({
       activeRound: roundindex,
     })
 
-    hostChannel.publish('reveal-answer', {
-      activeRound: roundindex,
-      activeQuestion: activeQuestionIndex,
-    })
+    goToNextQuestion()
   }
 
-  const roundLeaderboard = scores.find(
-    (round) => round.round === roundindex
-  ) ?? {
-    round: roundindex,
-    leaderboard: {},
-  }
+  const roundLeaderboard = scores[`round-${roundindex}`]
+
+  const roundScores = Object.keys(roundLeaderboard).map(
+    (item) => roundLeaderboard[item]
+  )
 
   if (ended)
     return (
       <EndRound
         RoundTitle={round.round_name}
         isLastRound={isLastRound}
-        scores={roundLeaderboard}
+        scores={roundScores}
         nextStep={goToNextRound}
       />
     )
@@ -171,22 +167,27 @@ export default function Dealers({
     <>
       {!revealAnswer ? (
         <>
-          <div className=' absolute right-5 bg-black/50 rounded-lg w-max px-5 text-white text-sm pb-5 min-w-40'>
-            {/* <div className='py-3'>
+          {!!dealingTeams.length && (
+            <div className=' absolute left-5 bg-black/50 rounded-lg w-max px-5 text-white text-sm pb-5 min-w-40 max-h-[500px] overflow-auto z-20'>
+              <div className=' flex flex-col gap-3'>
                 <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                   <small>Point to:</small>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                 </div>
-                <button
-                  onClick={() => () =>
-                    awardPointToPlayer(dealingTeam.clientId, true)
-                  }
-                  className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left'>
-                  {dealingTeam.name}
-                </button>
-              </div> */}
-            {!!bonusLineup.length && (
+                {dealingTeams.map((player, index) => (
+                  <button
+                    key={index}
+                    onClick={() => awardPointToPlayer(player.clientId, false)}
+                    className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
+                    {player.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {!!bonusLineup.length && (
+            <div className=' absolute right-5 bg-black/50 rounded-lg w-max px-5 text-white text-sm pb-5 min-w-40 z-20'>
               <div className=' flex flex-col gap-3'>
                 <div className=' text-white/60 uppercase flex items-center justify-center gap-3 '>
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
@@ -202,8 +203,8 @@ export default function Dealers({
                   </button>
                 ))}
               </div>
-            )}
-          </div>
+            </div>
+          )}
           <Question
             data={round.questions[activeQuestionIndex].question}
             onTimeComplete={allowBonusPoints}

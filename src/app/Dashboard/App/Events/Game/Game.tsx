@@ -3,6 +3,7 @@ import AppDialog from '@/components/AppDialog'
 import GameInterface from '@/components/GameInterface'
 import useFullscreen from '@/hooks/useFullScreen'
 import {
+  initializeRoundLeaderboard,
   pointAllocationByTimeAnswered,
   removeSpaceFromAnswerString,
   splitCodeInHalf,
@@ -17,19 +18,21 @@ import FinalResultComponent from './FinalResultComponent'
 import { PresenceMessage } from 'ably'
 import { ablyClient } from '@/lib/ably'
 import AppLogo from '@/components/AppLogo'
+import { PlayerGameState } from '@/app/Payer/Game'
 
 interface Props {
   data: GameEvent
 }
 
-export interface RoundLeaderboard {
-  round: number
-  leaderboard: {
-    [key: string]: {
-      score: number
-      name: string
-    }
+export interface TeamGameScore {
+  [key: string]: {
+    score: number
+    name: string
   }
+}
+
+export interface RoundLeaderboard {
+  [key: string]: TeamGameScore
 }
 
 export type BonusLineup = Pick<Player, 'clientId' | 'name'>
@@ -37,7 +40,7 @@ export type BonusLineup = Pick<Player, 'clientId' | 'name'>
 export interface GameState {
   players: Player[]
   remoteHostDevices: number
-  leaderboard: RoundLeaderboard[]
+  leaderboard: RoundLeaderboard
   quiz_started: boolean
   quiz_ended: boolean
   activeRound: number
@@ -71,10 +74,7 @@ export default function Game({ data }: Props) {
   const [globalGameState, setGlobalGameState] = useState<GameState>({
     players: [],
     remoteHostDevices: 0,
-    leaderboard: quiz.rounds.map((_, index) => ({
-      round: index,
-      leaderboard: {},
-    })),
+    leaderboard: initializeRoundLeaderboard(quiz.rounds),
     quiz_started: false,
     quiz_ended: false,
     activeRound: 0,
@@ -87,6 +87,13 @@ export default function Game({ data }: Props) {
     bonusLineup: [],
     dealer: null,
     answeredQuestions: [],
+  })
+  const [playerGameState, setplayerGameState] = useState<PlayerGameState>({
+    question: null,
+    round: null,
+    quiz_started: false,
+    quiz_ended: false,
+    questionIndex: 0,
   })
 
   const liveSyncWithHostDevice = async (data: Partial<GameState>) => {
@@ -112,12 +119,26 @@ export default function Game({ data }: Props) {
         quiz_started: true,
         round: {
           title: quiz.rounds[0].round_name,
-          type: quiz.rounds[0].round_name,
+          type: quiz.rounds[0].round_type,
           time: quiz.rounds[0].timer,
-          roundIndex: 0,
+          index: 0,
           round_started: false,
+          round_ended: false,
         },
       })
+
+      setplayerGameState((prev) => ({
+        ...prev,
+        quiz_started: true,
+        round: {
+          title: quiz.rounds[0].round_name,
+          type: quiz.rounds[0].round_type,
+          time: quiz.rounds[0].timer,
+          index: 0,
+          round_started: false,
+          round_ended: false,
+        },
+      }))
     })
     hostChannel.subscribe('start-round', async (msg) => {
       const activeRound = quiz.rounds[msg.data.activeRound]
@@ -135,6 +156,14 @@ export default function Game({ data }: Props) {
       })
       setStartingRound(true)
       roomChannel.publish('start-round', { round_started: true })
+      setplayerGameState((prev) => ({
+        ...prev,
+        round: {
+          ...prev.round!,
+          round_started: true,
+        },
+      }))
+
       if (activeRound.round_type === 'trivia') {
         await startTimer('start-round-timer', 5)
         publishQuestion(0, msg.data.activeRound)
@@ -145,6 +174,8 @@ export default function Game({ data }: Props) {
       const prevQuestionIndex = msg.data.activeQuestion
       const nextQuestionIndex = prevQuestionIndex + 1
       const roundIndex = msg.data.activeRound
+      const shouldNotpublish = msg.data.canRevealAnswer
+
       setGlobalGameState((prev) => {
         const updatedState: GameState = {
           ...prev,
@@ -155,7 +186,7 @@ export default function Game({ data }: Props) {
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
-      publishQuestion(nextQuestionIndex, roundIndex)
+      if (!shouldNotpublish) publishQuestion(nextQuestionIndex, roundIndex)
     })
     hostChannel.subscribe('set-question-index', (msg) => {
       const nextQuestionIndex = msg.data.questionIndex
@@ -229,6 +260,13 @@ export default function Game({ data }: Props) {
         return updatedState
       })
       roomChannel.publish('round-ended', { round_ended: true })
+      setplayerGameState((prev) => ({
+        ...prev,
+        round: {
+          ...prev.round!,
+          round_ended: true,
+        },
+      }))
     })
     hostChannel.subscribe('next-round', (msg) => {
       const currentRound = msg.data.activeRound
@@ -246,11 +284,24 @@ export default function Game({ data }: Props) {
       roomChannel.publish('next-round', {
         round: {
           title: quiz.rounds[nextRound].round_name,
-          type: quiz.rounds[nextRound].round_name,
+          type: quiz.rounds[nextRound].round_type,
           time: quiz.rounds[nextRound].timer,
-          roundIndex: nextRound,
+          index: nextRound,
+          round_started: false,
+          round_ended: false,
         },
       })
+      setplayerGameState((prev) => ({
+        ...prev,
+        round: {
+          title: quiz.rounds[nextRound].round_name,
+          type: quiz.rounds[nextRound].round_type,
+          time: quiz.rounds[nextRound].timer,
+          index: nextRound,
+          round_started: false,
+          round_ended: false,
+        },
+      }))
     })
     hostChannel.subscribe('final-result', () => {
       setGlobalGameState((prev) => {
@@ -337,6 +388,7 @@ export default function Game({ data }: Props) {
       liveSyncWithHostDevice(updatedState)
       return updatedState
     })
+    setplayerGameState((prev) => ({ ...prev, question: question }))
   }
 
   const startQuestionCountdownTimer = async (callback?: () => void) => {
@@ -358,16 +410,6 @@ export default function Game({ data }: Props) {
       const updatedState = {
         ...prev,
         players: [...prev.players, newPlayerData],
-        leaderboard: prev.leaderboard.map((item) => ({
-          round: item.round,
-          leaderboard: {
-            ...item.leaderboard,
-            [player.clientId]: item.leaderboard[player.clientId] ?? {
-              score: 0,
-              name: player.data.name,
-            },
-          },
-        })),
       }
       liveSyncWithHostDevice(updatedState)
       return updatedState
@@ -379,24 +421,11 @@ export default function Game({ data }: Props) {
       `${event_data.entry_code}:player-${player.data.clientId}`
     )
 
-    const activeRound = quiz.rounds[globalGameState.activeRound]
-
-    playerChannel.publish('sync-state', {
-      question:
-        globalGameState.activeQuestionIndex === null
-          ? null
-          : activeRound.questions[globalGameState.activeQuestionIndex].question,
-      round: {
-        title: activeRound.round_name,
-        type: activeRound.round_type,
-        time: activeRound.timer,
-        index: globalGameState.activeRound,
-        round_started: globalGameState.round_started,
-        round_ended: globalGameState.round_ended,
-      },
-      quiz_started: globalGameState.quiz_started,
-      quiz_ended: globalGameState.quiz_ended,
-      questionIndex: globalGameState.activeQuestionIndex || 0,
+    setplayerGameState((prev) => {
+      playerChannel.publish('sync-state', {
+        gameState: prev,
+      })
+      return prev
     })
 
     playerChannel.subscribe('submit-answer', (msg) => {
@@ -415,6 +444,8 @@ export default function Game({ data }: Props) {
           msg.data.time,
           quiz.rounds[activeRound].timer
         )
+
+        console.log(point)
 
         updatePlayerScore(clientId, point, activeRound)
       }
@@ -443,28 +474,30 @@ export default function Game({ data }: Props) {
     point: number,
     roundIndex: number
   ) => {
-    const activeRoundLeaderBoard = globalGameState.leaderboard.find(
-      (item) => item.round === roundIndex
-    )
-
-    if (!activeRoundLeaderBoard) return
-
-    activeRoundLeaderBoard.leaderboard[playerId] = {
-      score: (activeRoundLeaderBoard.leaderboard[playerId].score || 0) + point,
-      name: activeRoundLeaderBoard.leaderboard[playerId].name,
-    }
-
     setGlobalGameState((prev) => {
-      const updatedState = {
+      const playerName = prev.players.find(
+        (player) => player.clientId === playerId
+      )?.name
+      const updatedRoundScores = { ...prev.leaderboard[`round-${roundIndex}`] }
+      const playerScoreData = updatedRoundScores[playerId] || {
+        score: 0,
+        name: playerName,
+      }
+
+      playerScoreData.score += point
+      updatedRoundScores[playerId] = playerScoreData
+
+      const updatedState: GameState = {
         ...prev,
-        leaderboard: [...prev.leaderboard, activeRoundLeaderBoard],
+        leaderboard: {
+          ...prev.leaderboard,
+          [`round-${roundIndex}`]: updatedRoundScores,
+        },
       }
       liveSyncWithHostDevice(updatedState)
       return updatedState
     })
   }
-
-  const publishPlayerScoresToPlayerChannels = async () => {}
 
   if (!globalGameState.roomOpen)
     return (

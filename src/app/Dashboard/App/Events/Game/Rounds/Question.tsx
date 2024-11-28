@@ -80,7 +80,10 @@ export default function Question({
               <p className=' text-xl font-medium mb-3'>
                 Question {questionNumber}
               </p>
-              <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
+              <div>
+                <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
+                {/* {!data.standalone_media && data.question_media?.url} */}
+              </div>
             </div>
           </div>
           {data.question_type === 'multiple_choice' && (

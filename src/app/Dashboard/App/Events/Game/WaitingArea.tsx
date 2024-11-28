@@ -32,7 +32,7 @@ export default function WaitingArea({
           </div>
         ) : (
           <div className=' animate-pulse'>
-            <span className=' w-28'>
+            <span className=' w-36 block'>
               <AppLogo variant='dark' />
             </span>
             <p>Waiting for players....</p>

@@ -14,7 +14,7 @@ export interface TriviaProps {
   hostChannel: RealtimeChannel
   started: boolean
   ended: boolean
-  scores: RoundLeaderboard[]
+  scores: RoundLeaderboard
   starting: boolean
   seconds: number
   isLastRound: boolean
@@ -64,6 +64,7 @@ export default function Trivia({
         hostChannel.publish('next-question', {
           activeQuestion: activeQuestionIndex,
           activeRound: roundindex,
+          canRevealAnswer,
         })
       }
     }
@@ -79,19 +80,18 @@ export default function Trivia({
     }
   }
 
-  const roundLeaderboard = scores.find(
-    (round) => round.round === roundindex
-  ) ?? {
-    round: roundindex,
-    leaderboard: {},
-  }
+  const roundLeaderboard = scores[`round-${roundindex}`]
+
+  const roundScores = Object.keys(roundLeaderboard).map(
+    (item) => roundLeaderboard[item]
+  )
 
   if (ended)
     return (
       <EndRound
         RoundTitle={round.round_name}
         isLastRound={isLastRound}
-        scores={roundLeaderboard}
+        scores={roundScores}
         nextStep={goToNextRound}
       />
     )

@@ -1,8 +1,9 @@
-import React, { useEffect, useState } from 'react'
-import { QuizPlayer } from './Player'
 import { ablyClient } from '@/lib/ably'
-import Trivia from './Trivia'
+import { useEffect, useState } from 'react'
 import Dealers from './Dealers'
+import { QuizPlayer } from './Player'
+import RoundIntro from './RoundIntro'
+import Trivia from './Trivia'
 
 interface Props {
   data: QuizEvent
@@ -18,7 +19,7 @@ export interface PlayerRound {
   round_ended: boolean
 }
 
-interface PlayerGameState {
+export interface PlayerGameState {
   quiz_started: boolean
   quiz_ended: boolean
   round: PlayerRound | null
@@ -47,13 +48,9 @@ export default function Game({ data, user }: Props) {
   )
 
   const subscribeToRoomChannels = () => {
-    roomChannel.subscribe('sync-state', (msg) => {
-      setGameState((prev) => {
-        return {
-          ...prev,
-          ...msg.data.gameState,
-        }
-      })
+    playerChannel.subscribe('sync-state', (msg) => {
+      setGameState(msg.data.gameState)
+      console.log('state sync', msg.data)
     })
     roomChannel.subscribe('start-quiz', (msg) => {
       setGameState((prev) => ({
@@ -86,9 +83,27 @@ export default function Game({ data, user }: Props) {
         question: msg.data.question,
         questionIndex: msg.data.index,
       }))
+      setstartingRound(false)
     })
     roomChannel.subscribe('allow-bonus', (msg) => {
       setAllowBonus(msg.data.allowBonus)
+    })
+    roomChannel.subscribe('round-ended', (msg) => {
+      setGameState((prev) => ({
+        ...prev,
+        round: {
+          ...prev.round!,
+          round_ended: msg.data.round_ended,
+        },
+      }))
+    })
+    roomChannel.subscribe('next-round', (msg) => {
+      setGameState((prev) => ({
+        ...prev,
+        round: msg.data.round,
+        question: null,
+        questionIndex: 0,
+      }))
     })
   }
 
@@ -119,6 +134,7 @@ export default function Game({ data, user }: Props) {
       activeRound: gameState.round.index,
       activeQuestion: gameState.questionIndex,
       answer,
+      time: seconds,
     })
   }
 
@@ -129,16 +145,6 @@ export default function Game({ data, user }: Props) {
     })
     setAllowBonus(false)
   }
-
-  if (!gameState.quiz_started || !gameState.round)
-    return (
-      <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
-        <p>Waiting for quiz to start</p>
-        <small className=' text-muted-foreground'>
-          The quiz master has not started the quiz yet. please wait...
-        </small>
-      </div>
-    )
 
   if (gameState.quiz_ended)
     return (
@@ -151,14 +157,37 @@ export default function Game({ data, user }: Props) {
       </div>
     )
 
+  if (!gameState.quiz_started)
+    return (
+      <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
+        <p>Waiting for quiz to start</p>
+        <small className=' text-muted-foreground'>
+          The quiz master has not started the quiz yet. please wait...
+        </small>
+      </div>
+    )
+
+  if (!gameState.round || gameState.round.round_ended)
+    return (
+      <div className=' flex-auto flex items-center flex-col justify-center animate-pulse'>
+        <p>Waiting for next round</p>
+        <small className=' text-muted-foreground'>
+          The quiz master has not started the next round. please wait...
+        </small>
+      </div>
+    )
+
   if (startingRound)
     return (
       <div className='h-full flex items-center justify-center flex-col gap-10 '>
         <p className='font-semibold text-xl'>Round is starting in</p>
-        <h1 className='font-bold text-7xl'>{seconds}</h1>
+        <h1 className='font-bold text-7xl text-primary'>{seconds}</h1>
         <p className='font-medium text-lg'>Answer faster to gain more points</p>
       </div>
     )
+
+  if (!gameState.round.round_started)
+    return <RoundIntro round={gameState.round} />
 
   if (!gameState.question)
     return (

@@ -57,14 +57,13 @@ export default function Triva({
     }
   }
 
-  const roundLeaderboard = scores.find(
-    (round) => round.round === roundindex
-  ) ?? {
-    round: roundindex,
-    leaderboard: {},
-  }
-
   const activeQuestion = round.questions[activeQuestionIndex]
+
+  const roundLeaderboard = scores[`round-${roundindex}`]
+
+  const roundScores = Object.keys(roundLeaderboard).map(
+    (item) => roundLeaderboard[item]
+  )
 
   if (ended)
     return (
@@ -89,15 +88,15 @@ export default function Triva({
         <div>
           <h3 className='text-xl font-semibold'>Standings</h3>
           <div className=' mt-5'>
-            {Array.from({ length: 10 }).map((_, index) => (
+            {roundScores.map((player, index) => (
               <div
                 key={index}
                 className=' flex items-center gap-5 h-14  px-2 border border-border'>
                 <span>{index + 1}</span>
                 <span className=' flex-auto flex items-center pl-2 truncate border-x border-x-border h-full'>
-                  We Know Nothing
+                  {player.name}
                 </span>
-                <span className=' ml-auto'>10pts</span>
+                <span className=' ml-auto'>{player.score}pts</span>
               </div>
             ))}
           </div>

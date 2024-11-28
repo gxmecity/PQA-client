@@ -1,7 +1,6 @@
 import CircularProgress from '@/components/CircularProgress'
 import { cn } from '@/lib/utils'
 import { Hand } from 'lucide-react'
-import { RealtimeChannel } from 'ably'
 import { PlayerRound } from './Game'
 
 interface Props {

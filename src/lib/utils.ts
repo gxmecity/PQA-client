@@ -1,6 +1,7 @@
 import { clsx, type ClassValue } from 'clsx'
 import { twMerge } from 'tailwind-merge'
 import { toast } from 'sonner'
+import { RoundLeaderboard } from '@/app/Dashboard/App/Events/Game/Game'
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))
@@ -90,4 +91,23 @@ export const pointAllocationByTimeAnswered = (
 
 export const removeSpaceFromAnswerString = (value: string) => {
   return value.replace(/\s+/g, '').toLowerCase()
+}
+
+export function generateSlug(name: string): string {
+  return name
+    .toLowerCase()
+    .trim()
+    .replace(/[^\w\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .replace(/--+/g, '-')
+}
+
+export const initializeRoundLeaderboard = (rounds: any[]): RoundLeaderboard => {
+  const initialLeaderboard: RoundLeaderboard = {}
+
+  rounds.forEach((_, index) => {
+    initialLeaderboard[`round-${index}`] = {}
+  })
+
+  return initialLeaderboard
 }

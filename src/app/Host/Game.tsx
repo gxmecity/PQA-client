@@ -23,7 +23,7 @@ export default function Game({ data, user }: Props) {
   const [globalGameState, setglobalGameState] = useState<GameState>({
     players: [],
     remoteHostDevices: 0,
-    leaderboard: [],
+    leaderboard: {},
     quiz_started: false,
     quiz_ended: false,
     activeRound: 0,
