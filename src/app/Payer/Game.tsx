@@ -104,6 +104,12 @@ export default function Game({ data, user }: Props) {
         questionIndex: 0,
       }))
     })
+    roomChannel.subscribe('end-quiz', (msg) => {
+      setGameState((prev) => ({
+        ...prev,
+        quiz_ended: msg.data.quiz_ended,
+      }))
+    })
   }
 
   useEffect(() => {

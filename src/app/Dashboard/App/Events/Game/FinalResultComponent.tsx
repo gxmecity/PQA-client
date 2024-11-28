@@ -1,6 +1,5 @@
-import { useState } from 'react'
-import Leaderboard, { LeaderboardEntry } from './Leaderboard'
 import { RoundLeaderboard } from './Game'
+import Leaderboard, { LeaderboardEntry } from './Leaderboard'
 
 function FinalResultComponent({ scores }: { scores: RoundLeaderboard }) {
   // const [showLeaderbord, setshowLeaderbord] = useState(false)

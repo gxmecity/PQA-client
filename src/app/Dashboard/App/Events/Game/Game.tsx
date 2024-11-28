@@ -310,6 +310,7 @@ export default function Game({ data }: Props) {
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
+      roomChannel.publish('end-quiz', { quiz_ended: true })
     })
     hostChannel.subscribe('leaderboard-next', () => {
       setFinalLeaderboardShowPoitionIndex((prev) =>
