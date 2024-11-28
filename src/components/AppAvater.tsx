@@ -1,7 +1,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar'
 
 interface Props {
-  img_url: string
+  img_url?: string
   fallbackText: string
 }
 

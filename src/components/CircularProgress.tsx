@@ -3,16 +3,24 @@ import AnimatedCircularProgressBar from '@/components/ui/animated-circular-progr
 type Props = {
   value: number
   total: number
+  color?: string
+  sizeClassname?: string
 }
 
-export default function CircularProgress({ value, total }: Props) {
+export default function CircularProgress({
+  value,
+  total,
+  color = '#000000',
+  sizeClassname = 'size-40 text-2xl',
+}: Props) {
   return (
     <AnimatedCircularProgressBar
       min={0}
       max={total}
       value={value}
-      gaugePrimaryColor='rgb(0 0 0)'
-      gaugeSecondaryColor='rgba(0, 0, 0, 0.1)'
+      gaugePrimaryColor={color}
+      gaugeSecondaryColor={`${color}1A`}
+      className={sizeClassname}
     />
   )
 }

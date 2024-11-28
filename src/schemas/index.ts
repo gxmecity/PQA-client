@@ -142,3 +142,7 @@ export const joinRoomSchema = z.object({
     })
     .min(8, 'Enter a valid room code'),
 })
+
+export const playerSelectTeamSchema = z.object({
+  passphrase: z.string().min(1, 'Field is required'),
+})

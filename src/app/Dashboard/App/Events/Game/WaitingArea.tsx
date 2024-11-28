@@ -1,3 +1,4 @@
+import AppAvater from '@/components/AppAvater'
 import AppButton from '@/components/AppButton'
 import AppLogo from '@/components/AppLogo'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
@@ -19,22 +20,15 @@ export default function WaitingArea({
       <div className=' w-full flex flex-auto overflow-auto justify-center items-center pt-8'>
         {joinedPlayers.length ? (
           <div className=' h-full w-full flex justify-center  gap-10 flex-wrap'>
-            <span className='h-max'>
-              <Avatar className=' w-20 h-20 animate-pulse'>
-                <AvatarFallback className='bg-black text-primary text-xl '>
-                  DT
-                </AvatarFallback>
-              </Avatar>
-              <p>Team Dath</p>
-            </span>
-            <span className='h-max'>
-              <Avatar className=' w-20 h-20 animate-pulse'>
-                <AvatarFallback className='bg-black text-primary text-xl'>
-                  DT
-                </AvatarFallback>
-              </Avatar>
-              <p>Team Dath</p>
-            </span>
+            {joinedPlayers.map((player) => (
+              <span className='h-max'>
+                <AppAvater
+                  img_url={player.avatar_url}
+                  fallbackText={player.name}
+                />
+                <p>{player.name}</p>
+              </span>
+            ))}
           </div>
         ) : (
           <div className=' animate-pulse'>

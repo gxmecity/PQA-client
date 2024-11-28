@@ -65,7 +65,6 @@ export default function Triva({
   }
 
   const activeQuestion = round.questions[activeQuestionIndex]
-  console.log(seconds)
 
   if (ended)
     return (

@@ -8,6 +8,7 @@ import Dealers from './Dealers'
 import FinalResults from './FinalResults'
 import Triva from './Triva'
 import WaitingArea from './WaitingArea'
+import { Dices } from 'lucide-react'
 
 interface Props {
   data: QuizEvent
@@ -53,7 +54,7 @@ export default function Game({ data, user }: Props) {
     roomChannel.subscribe('question-timer', (msg) => {
       setSeconds(msg.data.countDownSec)
     })
-    roomChannel.subscribe('timer-ended', (msg) => {
+    roomChannel.subscribe('timer-ended', () => {
       setstartingRound(false)
     })
     roomChannel.subscribe('start-round-timer', (msg) => {
@@ -81,7 +82,7 @@ export default function Game({ data, user }: Props) {
 
   if (isLoading) return <Loader />
 
-  if (!quiz) return <EmptyState title='Quiz Not found' />
+  if (!quiz) return <EmptyState title='Quiz Not found' icon={<Dices />} />
 
   return (
     <>

@@ -108,13 +108,14 @@ export default function Game({ data }: Props) {
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
-      roomChannel.publish('quiz-started', {
+      roomChannel.publish('start-quiz', {
         quiz_started: true,
         round: {
           title: quiz.rounds[0].round_name,
           type: quiz.rounds[0].round_name,
           time: quiz.rounds[0].timer,
           roundIndex: 0,
+          round_started: false,
         },
       })
     })
@@ -309,7 +310,6 @@ export default function Game({ data }: Props) {
       setSeconds(countdown)
       await roomChannel.publish(event, {
         countDownSec: countdown,
-        timerType: event,
       })
       await new Promise((resolve) => setTimeout(resolve, 1000))
       countdown -= 1
@@ -350,7 +350,7 @@ export default function Game({ data }: Props) {
   const handleNewPlayerJoined = (player: PresenceMessage) => {
     const newPlayerData: Player = {
       clientId: player.data.clientId,
-      avatar_url: player.data.avater,
+      avatar_url: player.data.avatar,
       team_id: player.data.team_id,
       name: player.data.name,
     }
@@ -372,19 +372,43 @@ export default function Game({ data }: Props) {
       liveSyncWithHostDevice(updatedState)
       return updatedState
     })
+    toast.success('New Player Joined', {
+      description: `${newPlayerData.name} is in the house!!`,
+    })
     const playerChannel = ablyClient.channels.get(
       `${event_data.entry_code}:player-${player.data.clientId}`
     )
+
+    const activeRound = quiz.rounds[globalGameState.activeRound]
+
+    playerChannel.publish('sync-state', {
+      question:
+        globalGameState.activeQuestionIndex === null
+          ? null
+          : activeRound.questions[globalGameState.activeQuestionIndex].question,
+      round: {
+        title: activeRound.round_name,
+        type: activeRound.round_type,
+        time: activeRound.timer,
+        index: globalGameState.activeRound,
+        round_started: globalGameState.round_started,
+        round_ended: globalGameState.round_ended,
+      },
+      quiz_started: globalGameState.quiz_started,
+      quiz_ended: globalGameState.quiz_ended,
+      questionIndex: globalGameState.activeQuestionIndex || 0,
+    })
 
     playerChannel.subscribe('submit-answer', (msg) => {
       const clientId = msg.data.clientId
       const activeRound = msg.data.activeRound
       const questionIndex = msg.data.activeQuestion
+      const answer = msg.data.answer
 
       const activeQuestionAnswer =
         quiz.rounds[activeRound].questions[questionIndex].answer.answer_text
       if (
-        removeSpaceFromAnswerString(msg.data.answer) ===
+        removeSpaceFromAnswerString(answer) ===
         removeSpaceFromAnswerString(activeQuestionAnswer)
       ) {
         const point = pointAllocationByTimeAnswered(
@@ -403,7 +427,7 @@ export default function Game({ data }: Props) {
           bonusLineup: [
             ...prev.bonusLineup,
             {
-              clientId: msg.clientId!,
+              clientId: msg.data.clientId,
               name: msg.data.name,
             },
           ],

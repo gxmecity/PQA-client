@@ -40,7 +40,7 @@ export default function Question({
   }
 
   useEffect(() => {
-    startQuestionCountdown()
+    if (data.question_media?.type !== 'video') startQuestionCountdown()
     if (!shouldRevealAnswer) setAnimate(true)
 
     const animationTimer = setTimeout(() => setAnimate(false), 700)

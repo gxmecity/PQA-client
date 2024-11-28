@@ -63,14 +63,8 @@ export const dashboardRoutes: RouteObject[] = [
   },
   {
     path: '/play',
-    lazy: () => import('../Payer/Gameplay'),
+    lazy: () => import('../Payer/Player'),
     errorElement: <ErrorPage />,
-    children: [
-      {
-        path: '',
-        lazy: () => import('../Payer/Join'),
-      },
-    ],
   },
   {
     path: '/host',

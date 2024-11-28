@@ -51,6 +51,17 @@ export const eventsAndSeriesApiSlice = apiSlice.injectEndpoints({
       }),
       transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
     }),
+    signInTeamToEvent: builder.mutation<
+      Team,
+      { id: string; passphrase: string }
+    >({
+      query: (data) => ({
+        url: '/event/team-join',
+        method: 'POST',
+        data,
+      }),
+      transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
+    }),
   }),
 })
 
@@ -63,4 +74,5 @@ export const {
   useLazyGetEventByEntryCodeQuery,
   useGetEventByHostCodeQuery,
   useLazyGetEventByHostCodeQuery,
+  useSignInTeamToEventMutation,
 } = eventsAndSeriesApiSlice

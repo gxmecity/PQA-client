@@ -1,4 +1,3 @@
-import React from 'react'
 import AppLogo from './AppLogo'
 
 export default function Loader() {
