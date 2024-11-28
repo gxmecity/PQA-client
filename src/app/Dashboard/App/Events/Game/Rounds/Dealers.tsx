@@ -161,6 +161,7 @@ export default function Dealers({
         endRound={() => {
           hostChannel.publish('end-round', {})
         }}
+        dealingTeams={dealingTeams}
       />
     )
 
@@ -196,7 +197,7 @@ export default function Dealers({
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                 </div>
                 <AnimatedList>
-                  {bonusLineup.map((player, index) => (
+                  {bonusLineup.slice(0, 5).map((player, index) => (
                     <button
                       key={index}
                       onClick={() => awardPointToPlayer(player.clientId, true)}

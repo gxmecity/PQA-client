@@ -350,7 +350,19 @@ export default function Game({ data }: Props) {
       handleNewPlayerJoined(player)
     })
     roomChannel.presence.subscribe('leave', (player) => {
-      console.log(player)
+      setGlobalGameState((prev) => {
+        const updatedState: GameState = {
+          ...prev,
+          players: prev.players.filter(
+            (item) => item.clientId !== player.data.clientId
+          ),
+        }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
+      toast.success('Player left', {
+        description: `${player.data.name} left the quiz.`,
+      })
     })
 
     subscribeToHostChannels()

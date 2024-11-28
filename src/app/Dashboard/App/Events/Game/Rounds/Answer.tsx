@@ -28,7 +28,7 @@ export default function Answer({ data, isLastQuestion, goToNext }: Prop) {
         <p className=' text-xl font-medium mb-3'>Answer:</p>
         <h1 className=' font-bold text-6xl'>{data.answer_text}</h1>
       </div>
-      {!data.is_blackbox && (
+      {data.is_blackbox && (
         <span className=' h-32 w-32 absolute bottom-0 right-16'>
           <img src={blackbox} alt='blackbox' />
         </span>

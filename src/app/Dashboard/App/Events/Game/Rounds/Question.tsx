@@ -1,6 +1,6 @@
 import CircularProgress from '@/components/CircularProgress'
 import { cn } from '@/lib/utils'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 
 interface Props {
   data: Question
@@ -27,9 +27,19 @@ export default function Question({
   startTimer,
 }: Props) {
   const [animate, setAnimate] = useState(false)
+  const [videoPlayed, setVideoPlayed] = useState(false)
+  const videoEl = useRef<any>(null)
+
+  const attemptPlay = () => {
+    videoEl &&
+      videoEl.current &&
+      videoEl.current.play().catch((error: any) => {
+        console.error('Error attempting to play', error)
+      })
+  }
 
   const startQuestionCountdown = () => {
-    if (!shouldCountdown) return
+    if (!shouldCountdown || videoPlayed) return
     startTimer(onTimeComplete)
   }
 
@@ -40,7 +50,11 @@ export default function Question({
   }
 
   useEffect(() => {
-    if (data.question_media?.type !== 'video') startQuestionCountdown()
+    if (data.question_media?.type !== 'video') {
+      startQuestionCountdown()
+    } else {
+      attemptPlay()
+    }
     if (!shouldRevealAnswer) setAnimate(true)
 
     const animationTimer = setTimeout(() => setAnimate(false), 700)
@@ -58,13 +72,39 @@ export default function Question({
 
   if (data.standalone_media)
     return (
-      <>
+      <div className=' fixed h-dvh w-dvw left-0 top-0 bg-gradient-to-tr from-white to-primary'>
+        {data.question_media?.type === 'video' && (
+          <video
+            style={{ width: '100%', height: '100%' }}
+            playsInline
+            controls
+            src={data.question_media.url}
+            ref={videoEl}
+            onEnded={() => {
+              startQuestionCountdown()
+              setVideoPlayed(true)
+            }}
+          />
+        )}
+        {data.question_media?.type === 'image' && (
+          <img
+            src={data.question_media.url}
+            alt='question image'
+            className=' w-full h-full object-cover'
+          />
+        )}
+
         {timer > 0 && (
-          <div className=' absolute bottom-0 right-10'>
-            <CircularProgress value={timer} total={totalTime} />
+          <div className=' absolute bottom-20 right-10 z-20'>
+            <CircularProgress
+              value={timer}
+              total={totalTime}
+              color='#ffce1f'
+              sizeClassname='size-40 text-2xl text-primary'
+            />
           </div>
         )}
-      </>
+      </div>
     )
 
   return (
@@ -76,14 +116,31 @@ export default function Question({
         )}>
         <div className=' h-full w-full flex justify-center flex-col max-w-7xl mx-auto gap-16'>
           <div className=' flex items-center gap-2 justify-between w-full'>
-            <div className=' text-left'>
+            <div className=' text-left w-full'>
               <p className=' text-xl font-medium mb-3'>
                 Question {questionNumber}
               </p>
-              <div>
-                <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
+              <div className=' flex w-full flex-auto gap-2 justify-between'>
+                <h1 className=' font-bold text-5xl'>{data.question_text}</h1>
                 {!data.standalone_media && data.question_media?.url && (
-                  <div></div>
+                  <div className=' w-[400px]'>
+                    {data.question_media.type === 'image' && (
+                      <img src={data.question_media.url} alt='image' />
+                    )}
+                    {data.question_media?.type === 'video' && (
+                      <video
+                        style={{ width: '100%' }}
+                        playsInline
+                        controls
+                        src={data.question_media.url}
+                        ref={videoEl}
+                        onEnded={() => {
+                          startQuestionCountdown()
+                          setVideoPlayed(true)
+                        }}
+                      />
+                    )}
+                  </div>
                 )}
               </div>
             </div>
