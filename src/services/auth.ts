@@ -29,6 +29,19 @@ export const authApiSlice = apiSlice.injectEndpoints({
         return err
       },
     }),
+    getDashboardStats: builder.query({
+      query: () => ({
+        url: '/auth/dashboard-stats',
+        method: 'GET',
+      }),
+    }),
+    getUserDetails: builder.query<Auth, string>({
+      query: (id) => ({
+        url: `/auth/user/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<Auth>) => res.data,
+    }),
     getUserRegisteredTeams: builder.query<Team[], string>({
       query: (id) => ({
         url: `/teams/${id}`,
@@ -82,4 +95,6 @@ export const {
   useGetTeamDetailsQuery,
   useRegisterNewTeamMutation,
   useUpdateTeamDetailsMutation,
+  useGetDashboardStatsQuery,
+  useGetUserDetailsQuery,
 } = authApiSlice

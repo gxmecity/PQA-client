@@ -21,7 +21,7 @@ export function Component() {
     }
   )
 
-  const userUrl = `https://pubquiz.vercel.app/team/reg/${user?._id}`
+  const userUrl = `https://thepubquiz.vercel.app/team/reg/${user?._id}`
 
   return (
     <main className=' dashboard_section'>

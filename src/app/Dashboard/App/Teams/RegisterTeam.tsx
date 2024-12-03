@@ -9,7 +9,6 @@ import { registerTeamSchema } from '@/schemas'
 import { useRegisterNewTeamMutation } from '@/services/auth'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { MinusCircle, PlusCircle, UploadCloud } from 'lucide-react'
-import { useState } from 'react'
 import { SubmitHandler, useFieldArray, useForm } from 'react-hook-form'
 import { toast } from 'sonner'
 

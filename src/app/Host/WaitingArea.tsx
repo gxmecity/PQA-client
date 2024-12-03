@@ -20,7 +20,7 @@ export default function WaitingArea({
     <section className=' h-full'>
       <div className=' h-full flex flex-col gap-4 text-center justify-around items-center pt-8'>
         <div>
-          <div className='w-26'>
+          <div className=' w-24'>
             <AppLogo />
           </div>
           <h1 className=' text-primary text-3xl font-bold'>

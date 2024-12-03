@@ -103,7 +103,11 @@ export default function Game({ data }: Props) {
   const subscribeToHostChannels = () => {
     hostChannel.subscribe('open-room', (msg) => {
       enterFullScreen()
-      setGlobalGameState((prev) => ({ ...prev, roomOpen: msg.data.open }))
+      setGlobalGameState((prev) => {
+        const updatedState = { ...prev, roomOpen: msg.data.open }
+        liveSyncWithHostDevice(updatedState)
+        return updatedState
+      })
     })
     hostChannel.subscribe('start-quiz', () => {
       setGlobalGameState((prev) => {

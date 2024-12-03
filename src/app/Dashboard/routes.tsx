@@ -72,6 +72,16 @@ export const dashboardRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
   },
   {
+    path: '/team/reg/:id',
+    lazy: () => import('../Website/Home/Team/RegisterTeam'),
+    errorElement: <ErrorPage />,
+  },
+  {
+    path: '/team/success',
+    lazy: () => import('../Website/Home/Team/RegisterSuccess'),
+    errorElement: <ErrorPage />,
+  },
+  {
     path: '*',
     element: <Navigate to='/dashboard' />,
   },
