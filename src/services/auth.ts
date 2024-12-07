@@ -29,11 +29,13 @@ export const authApiSlice = apiSlice.injectEndpoints({
         return err
       },
     }),
-    getDashboardStats: builder.query({
+    getDashboardStats: builder.query<DashboardStats, undefined>({
       query: () => ({
         url: '/auth/dashboard-stats',
         method: 'GET',
       }),
+      transformResponse: (res: SuccessHttpResponse<DashboardStats>) => res.data,
+      providesTags: ['Dashboard'],
     }),
     getUserDetails: builder.query<Auth, string>({
       query: (id) => ({
@@ -69,7 +71,7 @@ export const authApiSlice = apiSlice.injectEndpoints({
         formData: true,
       }),
       transformResponse: (res: SuccessHttpResponse<Team>) => res.data,
-      invalidatesTags: ['Teams'],
+      invalidatesTags: ['Teams', 'Dashboard'],
     }),
     updateTeamDetails: builder.mutation<Team, { id: string; data: any }>({
       query: ({ id, data }) => ({

@@ -2,10 +2,13 @@ import DashboardSummary from '@/components/DashboardSummary'
 import DashboardTile from '@/components/DashboardTile'
 import EmptyState from '@/components/EmptyState'
 import { useAppSelector } from '@/redux/store'
+import { useGetDashboardStatsQuery } from '@/services/auth'
 import { CalendarCheck, CalendarX, Dices, Layers2, Users } from 'lucide-react'
 
 export function Component() {
   const { user } = useAppSelector((state) => state.auth)
+
+  const { data: dashboadStats } = useGetDashboardStatsQuery(undefined)
 
   return (
     <section className=' dashboard_section'>

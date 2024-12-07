@@ -435,7 +435,7 @@ export default function Game({ data }: Props) {
       description: `${newPlayerData.name} is in the house!!`,
     })
     const playerChannel = ablyClient.channels.get(
-      `${event_data.entry_code}:player-${player.data.clientId}`
+      `${event_data.entry_code}:player-${player.clientId}`
     )
 
     setplayerGameState((prev) => {
@@ -461,8 +461,6 @@ export default function Game({ data }: Props) {
           msg.data.time,
           quiz.rounds[activeRound].timer
         )
-
-        console.log(point)
 
         updatePlayerScore(clientId, point, activeRound)
       }
@@ -503,6 +501,8 @@ export default function Game({ data }: Props) {
 
       playerScoreData.score += point
       updatedRoundScores[playerId] = playerScoreData
+
+      console.log(playerScoreData)
 
       const updatedState: GameState = {
         ...prev,

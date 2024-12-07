@@ -44,7 +44,7 @@ export default function Game({ data, user }: Props) {
 
   const roomChannel = ablyClient.channels.get(`${data.entry_code}:primary`)
   const playerChannel = ablyClient.channels.get(
-    `${data.entry_code}:player-${playerId}`
+    `${data.entry_code}:player-${ablyClient.auth.clientId}`
   )
 
   const subscribeToRoomChannels = () => {
@@ -153,7 +153,7 @@ export default function Game({ data, user }: Props) {
 
   if (gameState.quiz_ended)
     return (
-      <div className=' flex-auto flex items-center flex-col'>
+      <div className=' flex-auto flex items-center justify-center flex-col'>
         <p className='font-bold'>Quiz Ended</p>
         <h1>Thanks For Playing.</h1>
         <small className=' text-muted-foreground'>

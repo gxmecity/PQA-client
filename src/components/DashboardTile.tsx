@@ -12,6 +12,7 @@ interface Props {
   value: string
   description: string
   icon: ReactNode
+  loading?: boolean
 }
 
 const DashboardTile = ({ title, description, value, icon }: Props) => {

@@ -22,9 +22,11 @@ export default function Trivia({
   submitAnswer,
 }: Props) {
   const [allowAnswer, setallowAnswer] = useState<boolean>(true)
+  const [submitted, setSubmitted] = useState(false)
 
   const handleAnswerSubmit = (ans: string) => {
     setallowAnswer(false)
+    setSubmitted(true)
     submitAnswer(ans)
   }
   const openAnsweForm = useForm({
@@ -38,15 +40,20 @@ export default function Trivia({
     passphrase,
   }) => {
     handleAnswerSubmit(passphrase)
+    openAnsweForm.reset()
   }
 
   useEffect(() => {
     setallowAnswer(true)
+    setSubmitted(false)
   }, [question])
 
   useEffect(() => {
     if (seconds < 1) {
       setallowAnswer(false)
+      openAnsweForm.reset()
+    } else if (!submitted) {
+      setallowAnswer(true)
     }
   }, [seconds])
 

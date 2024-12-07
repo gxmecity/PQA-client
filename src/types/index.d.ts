@@ -50,6 +50,12 @@ declare interface User {
   updatedAt: string
   __v: number
 }
+declare interface DashboardStats {
+  quiz: number
+  events: number
+  series: number
+  userTeams: number
+}
 
 declare interface Team {
   _id: string
