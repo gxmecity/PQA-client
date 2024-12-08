@@ -55,6 +55,8 @@ export interface GameState {
   answeredQuestions: number[]
 }
 
+//TODO: add stepper for final result component
+
 export default function Game({ data }: Props) {
   const {
     event_channels: { hostChannel, roomChannel },

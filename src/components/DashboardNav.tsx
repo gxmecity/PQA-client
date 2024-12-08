@@ -20,15 +20,14 @@ import { cn } from '@/lib/utils'
 import { HamburgerMenuIcon } from '@radix-ui/react-icons'
 import { ChevronDown } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import AppButton from './AppButton'
+import AppLogo from './AppLogo'
 import { ModeToggle } from './ToggleTheme'
 import {
   Collapsible,
   CollapsibleContent,
   CollapsibleTrigger,
 } from './ui/collapsible'
-import { Button } from './ui/button'
-import AppLogo from './AppLogo'
+import AppAvater from './AppAvater'
 
 interface ListItem {
   children: any
@@ -37,13 +36,17 @@ interface ListItem {
   classname?: string
 }
 
-export function NavigationMenuDemo() {
+interface Props {
+  name: string
+}
+
+export function NavigationMenuDemo({ name }: Props) {
   return (
     <NavigationMenu className=' px-5 h-16 border-b border-b-border flex items-center gap-5 w-full max-w-full justify-start flex-none'>
-      <MobileNav />
-      <a href='/' className=' block w-20'>
+      <MobileNav name={name} />
+      <Link to='/dashboard' className=' block w-16'>
         <AppLogo />
-      </a>
+      </Link>
       <NavigationMenuList className=' sm:hidden'>
         <NavigationMenuItem>
           <>
@@ -100,9 +103,8 @@ export function NavigationMenuDemo() {
       </NavigationMenuList>
       <div className='ml-auto flex gap-3 items-center'>
         <ModeToggle />
-        <Avatar className=' sm:hidden'>
-          <AvatarFallback className='bg-primary'>AK</AvatarFallback>
-        </Avatar>
+
+        <AppAvater fallbackText={name} />
       </div>
     </NavigationMenu>
   )
@@ -129,7 +131,7 @@ const ListItem = ({ title, url, children, classname }: ListItem) => {
 }
 ListItem.displayName = 'ListItem'
 
-const MobileNav = () => {
+const MobileNav = ({ name }: Props) => {
   return (
     <Sheet>
       <SheetTrigger className=' hidden sm:flex' asChild>
@@ -186,9 +188,7 @@ const MobileNav = () => {
           </NavigationMenuList>
 
           <div className='mt-auto flex gap-3 items-center'>
-            <Avatar className=''>
-              <AvatarFallback className='bg-primary'>AK</AvatarFallback>
-            </Avatar>
+            <AppAvater fallbackText={name} />
             <small className='truncate'>Azubuike Kizto</small>
             <ChevronDown className=' ml-auto' />
           </div>

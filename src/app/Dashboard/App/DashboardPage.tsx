@@ -16,7 +16,7 @@ export function Component() {
 
   return (
     <main className=' flex flex-col h-full'>
-      <NavigationMenuDemo />
+      <NavigationMenuDemo name={user.fullname} />
       <Outlet />
     </main>
   )
