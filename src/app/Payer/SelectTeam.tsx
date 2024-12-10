@@ -136,7 +136,7 @@ export default function SelectTeam({ event, setPlayer }: Props) {
                 <p className='text-muted-foreground text-sm text-center'>
                   Don't have a team?{' '}
                   <a
-                    href={`https://thepubquiz.vercel.app/team/reg/${event.creator._id}`}
+                    href={`https://${window.location.hostname}/team/reg/${event.creator._id}`}
                     target='_blank'
                     className=' font-medium text-primary'>
                     Register new team
