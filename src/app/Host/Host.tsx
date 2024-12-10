@@ -44,7 +44,7 @@ export function Component() {
 
   return (
     <main className=' h-full flex flex-col items-center'>
-      <Game data={event} user={user} />
+      <Game data={event} user={user} resetData={() => setEvent(null)} />
     </main>
   )
 }

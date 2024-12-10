@@ -8,6 +8,7 @@ import Trivia from './Trivia'
 interface Props {
   data: QuizEvent
   user: QuizPlayer
+  exitRoom: () => void
 }
 
 export interface PlayerRound {
@@ -27,11 +28,12 @@ export interface PlayerGameState {
   questionIndex: number
 }
 
-export default function Game({ data, user }: Props) {
+export default function Game({ data, user, exitRoom }: Props) {
   const playerId = user.clientId ?? ablyClient.auth.clientId
 
   const [seconds, setSeconds] = useState<number>(0)
   const [startingRound, setstartingRound] = useState<boolean>(false)
+  const [finalScore, setFinalScore] = useState<number | null>(null)
 
   const [gameState, setGameState] = useState<PlayerGameState>({
     question: null,
@@ -105,10 +107,21 @@ export default function Game({ data, user }: Props) {
       }))
     })
     roomChannel.subscribe('end-quiz', (msg) => {
+      const playerScore: LeaderboardEntry = msg.data.leaderboard.find(
+        (item: LeaderboardEntry) => item.player.id === playerId
+      )
+
+      if (playerScore) setFinalScore(playerScore.score)
+
       setGameState((prev) => ({
         ...prev,
         quiz_ended: msg.data.quiz_ended,
       }))
+    })
+    roomChannel.subscribe('close-room', () => {
+      roomChannel.detach()
+      playerChannel.detach()
+      exitRoom()
     })
   }
 
@@ -147,18 +160,29 @@ export default function Game({ data, user }: Props) {
     await playerChannel.publish('request-bonus', {
       name: user.name,
       clientId: playerId,
+      team_id: user.team_id,
     })
     setAllowBonus(false)
   }
 
   if (gameState.quiz_ended)
     return (
-      <div className=' flex-auto flex items-center justify-center flex-col'>
-        <p className='font-bold'>Quiz Ended</p>
-        <h1>Thanks For Playing.</h1>
-        <small className=' text-muted-foreground'>
-          Check the main screen to see your final score..
-        </small>
+      <div className=' flex-auto flex items-center gap-10 justify-center flex-col'>
+        {finalScore !== null && (
+          <div>
+            <p className='text-xs'>Your final score: </p>
+            <h1 className=' text-primary font-bold text-3xl'>
+              {finalScore}pts
+            </h1>
+          </div>
+        )}
+        <div>
+          <p className='font-bold'>Quiz Ended</p>
+          <h1>Thanks For Playing.</h1>
+          <small className=' text-muted-foreground'>
+            Check the main screen to see your final score..
+          </small>
+        </div>
       </div>
     )
 
@@ -210,16 +234,6 @@ export default function Game({ data, user }: Props) {
         <p>Waiting for next question</p>
         <small className=' text-muted-foreground'>
           The quiz master has not sent your next question. please wait...
-        </small>
-      </div>
-    )
-
-  if (gameState.round.round_ended)
-    return (
-      <div className=' flex-auto flex items-center justify-center flex-col'>
-        <p className='font-bold'>Round Ended</p>
-        <small className=' text-muted-foreground'>
-          Check the main screen to see your final score..
         </small>
       </div>
     )

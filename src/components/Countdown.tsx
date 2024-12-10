@@ -14,7 +14,6 @@ const Clock = () => {
       interval = setInterval(() => {
         const now = new Date().getTime()
         const difference = destination - now
-        // console.log(destination)
 
         const days = Math.floor(difference / (1000 * 60 * 60 * 24))
 

@@ -88,17 +88,19 @@ export default function Triva({
         <div>
           <h3 className='text-xl font-semibold'>Standings</h3>
           <div className=' mt-5'>
-            {roundScores.map((player, index) => (
-              <div
-                key={index}
-                className=' flex items-center gap-5 h-14  px-2 border border-border'>
-                <span>{index + 1}</span>
-                <span className=' flex-auto flex items-center pl-2 truncate border-x border-x-border h-full'>
-                  {player.name}
-                </span>
-                <span className=' ml-auto'>{player.score}pts</span>
-              </div>
-            ))}
+            {roundScores
+              .sort((a, b) => b.score - a.score)
+              .map((player, index) => (
+                <div
+                  key={index}
+                  className=' flex items-center gap-5 h-14  px-2 border border-border'>
+                  <span>{index + 1}</span>
+                  <span className=' flex-auto flex items-center pl-2 truncate border-x border-x-border h-full'>
+                    {player.name}
+                  </span>
+                  <span className=' ml-auto'>{player.score}pts</span>
+                </div>
+              ))}
           </div>
         </div>
       </section>
@@ -169,18 +171,22 @@ export default function Triva({
 
       <div className=' mb-20'>
         <h3 className=' text-xl font-semibold'>Question</h3>
-        <p>Who Killed Delegiwa?</p>
+        <p>{activeQuestion.question.question_text}</p>
 
-        <ul className=' mt-6 list-disc px-5 space-y-2'>
-          <li>Babangida</li>
-          <li>Obasanjo</li>
-          <li>Atiku</li>
-          <li>MGK</li>
-        </ul>
+        {activeQuestion.question.question_type === 'multiple_choice' &&
+          activeQuestion.question.multi_choice_options?.length && (
+            <ul className=' mt-6 list-disc px-5 space-y-2'>
+              {activeQuestion.question.multi_choice_options.map(
+                (option, index) => (
+                  <li key={index}>{option}</li>
+                )
+              )}
+            </ul>
+          )}
       </div>
       <div className=' mb-10'>
         <h3 className=' text-xl font-semibold'>Correct Answer</h3>
-        <p>Babangida</p>
+        <p>{activeQuestion.answer.answer_text}</p>
       </div>
       <AppButton
         disabled={seconds > 0}

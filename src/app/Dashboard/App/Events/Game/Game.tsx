@@ -1,24 +1,27 @@
+import { PlayerGameState } from '@/app/Payer/Game'
 import AppButton from '@/components/AppButton'
 import AppDialog from '@/components/AppDialog'
+import AppLogo from '@/components/AppLogo'
+import EmptyState from '@/components/EmptyState'
 import GameInterface from '@/components/GameInterface'
 import useFullscreen from '@/hooks/useFullScreen'
+import { ablyClient } from '@/lib/ably'
 import {
+  errorResponseHandler,
   initializeRoundLeaderboard,
   pointAllocationByTimeAnswered,
   removeSpaceFromAnswerString,
   splitCodeInHalf,
 } from '@/lib/utils'
+import { useUpdateQuizEventMutation } from '@/services/events'
+import { PresenceMessage } from 'ably'
 import { useEffect, useState } from 'react'
 import { toast } from 'sonner'
 import { GameEvent } from '../Broadcast'
-import WaitingArea from './WaitingArea'
-import Trivia from './Rounds/Trivia'
-import Dealers from './Rounds/Dealers'
 import FinalResultComponent from './FinalResultComponent'
-import { PresenceMessage } from 'ably'
-import { ablyClient } from '@/lib/ably'
-import AppLogo from '@/components/AppLogo'
-import { PlayerGameState } from '@/app/Payer/Game'
+import Dealers from './Rounds/Dealers'
+import Trivia from './Rounds/Trivia'
+import WaitingArea from './WaitingArea'
 
 interface Props {
   data: GameEvent
@@ -28,6 +31,7 @@ export interface TeamGameScore {
   [key: string]: {
     score: number
     name: string
+    team_id?: string
   }
 }
 
@@ -35,7 +39,7 @@ export interface RoundLeaderboard {
   [key: string]: TeamGameScore
 }
 
-export type BonusLineup = Pick<Player, 'clientId' | 'name'>
+export type BonusLineup = Pick<Player, 'clientId' | 'name' | 'team_id'>
 
 export interface GameState {
   players: Player[]
@@ -55,7 +59,12 @@ export interface GameState {
   answeredQuestions: number[]
 }
 
-//TODO: add stepper for final result component
+export interface FinalResultDisplayState {
+  leaderboardPositionIndex: number
+  showPlayerInPosition: boolean
+  showFullLeaderboard: boolean
+  finalLeaderBoard: LeaderboardEntry[]
+}
 
 export default function Game({ data }: Props) {
   const {
@@ -63,15 +72,23 @@ export default function Game({ data }: Props) {
     event_data,
     quiz,
   } = data
+
+  const [updateQuizEvent, { isLoading: updatingEvent }] =
+    useUpdateQuizEventMutation()
+
   const [open, setOpen] = useState(true)
   const [seconds, setSeconds] = useState(0)
   const [startingRound, setStartingRound] = useState(false)
-  const [
-    finalLeaderboardShowPoitionIndex,
-    setFinalLeaderboardShowPoitionIndex,
-  ] = useState<number | null>(null)
 
-  const enterFullScreen = useFullscreen()
+  const [finalResultState, setFinalResultState] =
+    useState<FinalResultDisplayState>({
+      leaderboardPositionIndex: 5,
+      showFullLeaderboard: false,
+      showPlayerInPosition: false,
+      finalLeaderBoard: [],
+    })
+
+  const { activateFullscreen, exitFullscreen } = useFullscreen()
 
   const [globalGameState, setGlobalGameState] = useState<GameState>({
     players: [],
@@ -90,7 +107,7 @@ export default function Game({ data }: Props) {
     dealer: null,
     answeredQuestions: [],
   })
-  const [playerGameState, setplayerGameState] = useState<PlayerGameState>({
+  const [_, setplayerGameState] = useState<PlayerGameState>({
     question: null,
     round: null,
     quiz_started: false,
@@ -104,7 +121,7 @@ export default function Game({ data }: Props) {
 
   const subscribeToHostChannels = () => {
     hostChannel.subscribe('open-room', (msg) => {
-      enterFullScreen()
+      activateFullscreen()
       setGlobalGameState((prev) => {
         const updatedState = { ...prev, roomOpen: msg.data.open }
         liveSyncWithHostDevice(updatedState)
@@ -148,15 +165,31 @@ export default function Game({ data }: Props) {
     })
     hostChannel.subscribe('start-round', async (msg) => {
       const activeRound = quiz.rounds[msg.data.activeRound]
+
       setGlobalGameState((prev) => {
-        const updatedState = {
+        const newRoundData: TeamGameScore = {}
+
+        prev.players.forEach((player) => {
+          newRoundData[player.clientId] = {
+            name: player.name,
+            score: 0,
+            team_id: player.team_id,
+          }
+        })
+
+        const updatedState: GameState = {
           ...prev,
           round_started: true,
           canRevealAnswer: false,
           dealer: prev.players[0],
           activeQuestionIndex: activeRound.round_type === 'trivia' ? 0 : null,
           answeredQuestions: [],
+          leaderboard: {
+            ...prev.leaderboard,
+            [`round-${msg.data.activeRound}`]: newRoundData,
+          },
         }
+        console.log(newRoundData)
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
@@ -236,6 +269,7 @@ export default function Game({ data }: Props) {
 
         return updatedState
       })
+      roomChannel.publish('round-ended', { round_ended: true })
     })
     hostChannel.subscribe('reveal-answer', (msg) => {
       setGlobalGameState((prev) => {
@@ -256,8 +290,21 @@ export default function Game({ data }: Props) {
       updatePlayerScore(
         msg.data.playerId,
         msg.data.isBonus ? 5 : 10,
-        msg.data.activeRound
+        msg.data.activeRound,
+        msg.data.team_id
       )
+
+      setGlobalGameState((prev) => {
+        const playerToAward = prev.players.find(
+          (item) => item.clientId === msg.data.playerId
+        )
+        if (playerToAward) {
+          toast.success(
+            `${msg.data.isBonus ? 'Bonus' : 'Point'} to ${playerToAward.name}`
+          )
+        }
+        return prev
+      })
     })
     hostChannel.subscribe('end-round', async () => {
       setGlobalGameState((prev) => {
@@ -312,18 +359,70 @@ export default function Game({ data }: Props) {
     hostChannel.subscribe('final-result', () => {
       setGlobalGameState((prev) => {
         const updatedState = { ...prev, quiz_ended: true }
-
+        computeFinalLeaderboard(prev.leaderboard)
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
-      roomChannel.publish('end-quiz', { quiz_ended: true })
     })
-    hostChannel.subscribe('leaderboard-next', () => {
-      setFinalLeaderboardShowPoitionIndex((prev) =>
-        prev !== null ? prev - 1 : 5
+    hostChannel.subscribe('final-leaderboard-next', () => {
+      setFinalResultState((prev) => {
+        if (prev.leaderboardPositionIndex === 0 && prev.showPlayerInPosition) {
+          hostChannel.publish('last-result', { isLastResult: true })
+          return {
+            ...prev,
+            showFullLeaderboard: true,
+          }
+        }
+
+        if (!prev.showPlayerInPosition)
+          return {
+            ...prev,
+            showPlayerInPosition: true,
+          }
+
+        return {
+          ...prev,
+          showPlayerInPosition: false,
+          leaderboardPositionIndex: prev.leaderboardPositionIndex - 1,
+        }
+      })
+    })
+    hostChannel.subscribe('end-quiz', async (msg) => {
+      const leaderboard: LeaderboardEntry[] = msg.data.leaderboard.map(
+        (item: LeaderboardEntry) => {
+          if (!item.player.team_id)
+            return {
+              player: {
+                id: item.player.id,
+                name: item.player.name,
+              },
+              score: item.score,
+            }
+
+          return {
+            player: {
+              id: item.player.id,
+              name: item.player.name,
+              team_id: item.player.team_id,
+            },
+            score: item.score,
+          }
+        }
       )
+
+      try {
+        await updateQuizEvent({
+          id: event_data._id,
+          data: { leaderboard, event_ended: true },
+        }).unwrap()
+        roomChannel.publish('close-room', {})
+        hostChannel.detach()
+        roomChannel.detach()
+        exitFullscreen()
+      } catch (error: any) {
+        errorResponseHandler(error)
+      }
     })
-    hostChannel.subscribe('end-quiz', () => {})
   }
 
   useEffect(() => {
@@ -425,6 +524,9 @@ export default function Game({ data }: Props) {
       team_id: player.data.team_id,
       name: player.data.name,
     }
+
+    console.log(newPlayerData)
+
     setGlobalGameState((prev) => {
       const updatedState = {
         ...prev,
@@ -452,6 +554,7 @@ export default function Game({ data }: Props) {
       const activeRound = msg.data.activeRound
       const questionIndex = msg.data.activeQuestion
       const answer = msg.data.answer
+      const team_id = msg.data.team_id
 
       const activeQuestionAnswer =
         quiz.rounds[activeRound].questions[questionIndex].answer.answer_text
@@ -464,19 +567,25 @@ export default function Game({ data }: Props) {
           quiz.rounds[activeRound].timer
         )
 
-        updatePlayerScore(clientId, point, activeRound)
+        updatePlayerScore(clientId, point, activeRound, team_id)
       }
     })
 
     playerChannel.subscribe('request-bonus', (msg) => {
       setGlobalGameState((prev) => {
-        const updatedState = {
+        if (
+          prev.bonusLineup.some((item) => item.clientId === msg.data.clientId)
+        )
+          return prev
+
+        const updatedState: GameState = {
           ...prev,
           bonusLineup: [
             ...prev.bonusLineup,
             {
               clientId: msg.data.clientId,
               name: msg.data.name,
+              team_id: msg.data.team_id,
             },
           ],
         }
@@ -489,7 +598,8 @@ export default function Game({ data }: Props) {
   const updatePlayerScore = (
     playerId: string,
     point: number,
-    roundIndex: number
+    roundIndex: number,
+    team_id?: string
   ) => {
     setGlobalGameState((prev) => {
       const playerName = prev.players.find(
@@ -499,6 +609,7 @@ export default function Game({ data }: Props) {
       const playerScoreData = updatedRoundScores[playerId] || {
         score: 0,
         name: playerName,
+        team_id: team_id ?? '',
       }
 
       playerScoreData.score += point
@@ -516,6 +627,43 @@ export default function Game({ data }: Props) {
       liveSyncWithHostDevice(updatedState)
       return updatedState
     })
+  }
+
+  const computeFinalLeaderboard = (scores: RoundLeaderboard) => {
+    const finalScores: { [key: string]: LeaderboardEntry } = {}
+
+    // Aggregate scores across rounds
+    for (const round in scores) {
+      for (const playerId in scores[round]) {
+        const player = scores[round][playerId]
+        if (!finalScores[playerId]) {
+          finalScores[playerId] = {
+            player: {
+              name: player.name,
+              id: playerId,
+              team_id: player.team_id,
+            },
+            score: 0,
+          }
+        }
+        finalScores[playerId].score += player.score
+      }
+    }
+
+    // Convert aggregated scores into leaderboard array
+    const leaderboard: LeaderboardEntry[] = Object.values(finalScores)
+
+    // Sort by score in descending order
+    leaderboard.sort((a, b) => b.score - a.score)
+
+    setFinalResultState((prev) => ({
+      ...prev,
+      leaderboardPositionIndex:
+        leaderboard.length > 6 ? 5 : leaderboard.length - 1,
+      finalLeaderBoard: leaderboard,
+    }))
+
+    roomChannel.publish('end-quiz', { quiz_ended: true, leaderboard })
   }
 
   if (!globalGameState.roomOpen)
@@ -549,16 +697,17 @@ export default function Game({ data }: Props) {
               <span className=' font-semibold text-primary'>
                 DO NOT SHARE THIS CODE.
               </span>{' '}
-              Go to <span className=' underline'>quiz.gxmecity.com</span> and
-              enter this host code to remotely control your quiz.
+              Go to{' '}
+              <span className=' underline'>
+                {window.location.hostname}/host
+              </span>{' '}
+              and enter this host code to remotely control your quiz.
             </small>
             <div className=' flex items-center justify-between gap-5 w-full'>
               <span className=' h-[0.5px] bg-primary flex-auto'></span>
-              <p>OR</p>
-              <span className=' h-[0.5px] bg-primary flex-auto'></span>
             </div>
             <AppButton
-              text='Start Game Manually'
+              text='Start Game '
               classname=' h-12 font-bold w-full max-w-[300px] text-lg'
               onClick={openQuizRoomManually}
             />
@@ -572,54 +721,76 @@ export default function Game({ data }: Props) {
       joinCode={data.event_data.entry_code}
       numberOfPlayers={globalGameState.players.length}
       hostDevices={globalGameState.remoteHostDevices}>
-      {globalGameState.quiz_ended ? (
-        <FinalResultComponent scores={globalGameState.leaderboard} />
-      ) : !globalGameState.quiz_started ? (
-        <WaitingArea
-          joinedPlayers={globalGameState.players}
-          title={event_data.title}
-          startQuiz={() => {
-            hostChannel.publish('start-quiz', {})
-          }}
-        />
-      ) : quiz.rounds[globalGameState.activeRound].round_type === 'trivia' ? (
-        <Trivia
-          activeQuestionIndex={globalGameState.activeQuestionIndex!}
-          roundindex={globalGameState.activeRound}
-          hostChannel={hostChannel}
-          round={quiz.rounds[globalGameState.activeRound]}
-          canRevealAnswer={globalGameState.canRevealAnswer}
-          revealAnswer={globalGameState.revealAnswer}
-          scores={globalGameState.leaderboard}
-          seconds={seconds}
-          started={globalGameState.round_started}
-          ended={globalGameState.round_ended}
-          starting={startingRound}
-          isLastRound={globalGameState.activeRound === quiz.rounds.length - 1}
-          isLastQuestion={
-            globalGameState.activeQuestionIndex ===
-            quiz.rounds[globalGameState.activeRound].questions.length - 1
+      {updatingEvent ? (
+        <EmptyState
+          icon={
+            <span className=' w-28 block animate-pulse'>
+              <AppLogo variant='white' />
+            </span>
           }
-          startTimerFunction={startQuestionCountdownTimer}
+          title='Submitting Result'
+          description='Please wait while we submit the results and close the room...'
         />
       ) : (
-        <Dealers
-          activeQuestionIndex={globalGameState.activeQuestionIndex}
-          roundindex={globalGameState.activeRound}
-          hostChannel={hostChannel}
-          roomChannel={roomChannel}
-          round={quiz.rounds[globalGameState.activeRound]}
-          revealAnswer={globalGameState.revealAnswer}
-          scores={globalGameState.leaderboard}
-          seconds={seconds}
-          started={globalGameState.round_started}
-          ended={globalGameState.round_ended}
-          isLastRound={globalGameState.activeRound === quiz.rounds.length - 1}
-          bonusLineup={globalGameState.bonusLineup}
-          dealingTeams={globalGameState.players}
-          startTimerFunction={startQuestionCountdownTimer}
-          answeredQuestions={globalGameState.answeredQuestions}
-        />
+        <>
+          {globalGameState.quiz_ended ? (
+            <FinalResultComponent
+              resultState={finalResultState}
+              hostChannel={hostChannel}
+            />
+          ) : !globalGameState.quiz_started ? (
+            <WaitingArea
+              joinedPlayers={globalGameState.players}
+              title={event_data.title}
+              startQuiz={() => {
+                hostChannel.publish('start-quiz', {})
+              }}
+            />
+          ) : quiz.rounds[globalGameState.activeRound].round_type ===
+            'trivia' ? (
+            <Trivia
+              activeQuestionIndex={globalGameState.activeQuestionIndex!}
+              roundindex={globalGameState.activeRound}
+              hostChannel={hostChannel}
+              round={quiz.rounds[globalGameState.activeRound]}
+              canRevealAnswer={globalGameState.canRevealAnswer}
+              revealAnswer={globalGameState.revealAnswer}
+              scores={globalGameState.leaderboard}
+              seconds={seconds}
+              started={globalGameState.round_started}
+              ended={globalGameState.round_ended}
+              starting={startingRound}
+              isLastRound={
+                globalGameState.activeRound === quiz.rounds.length - 1
+              }
+              isLastQuestion={
+                globalGameState.activeQuestionIndex ===
+                quiz.rounds[globalGameState.activeRound].questions.length - 1
+              }
+              startTimerFunction={startQuestionCountdownTimer}
+            />
+          ) : (
+            <Dealers
+              activeQuestionIndex={globalGameState.activeQuestionIndex}
+              roundindex={globalGameState.activeRound}
+              hostChannel={hostChannel}
+              roomChannel={roomChannel}
+              round={quiz.rounds[globalGameState.activeRound]}
+              revealAnswer={globalGameState.revealAnswer}
+              scores={globalGameState.leaderboard}
+              seconds={seconds}
+              started={globalGameState.round_started}
+              ended={globalGameState.round_ended}
+              isLastRound={
+                globalGameState.activeRound === quiz.rounds.length - 1
+              }
+              bonusLineup={globalGameState.bonusLineup}
+              dealingTeams={globalGameState.players}
+              startTimerFunction={startQuestionCountdownTimer}
+              answeredQuestions={globalGameState.answeredQuestions}
+            />
+          )}
+        </>
       )}
     </GameInterface>
   )

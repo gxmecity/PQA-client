@@ -105,11 +105,16 @@ export default function Dealers({
     }
   }
 
-  const awardPointToPlayer = async (playerId: string, isBonus: boolean) => {
+  const awardPointToPlayer = async (
+    playerId: string,
+    isBonus: boolean,
+    team_id?: string
+  ) => {
     await hostChannel.publish('award-point', {
       playerId,
       isBonus,
       activeRound: roundindex,
+      team_id,
     })
 
     goToNextQuestion()
@@ -117,8 +122,15 @@ export default function Dealers({
 
   const roundLeaderboard = scores[`round-${roundindex}`]
 
-  const roundScores = Object.keys(roundLeaderboard).map(
-    (item) => roundLeaderboard[item]
+  const roundScores: LeaderboardEntry[] = Object.keys(roundLeaderboard).map(
+    (item) => ({
+      player: {
+        name: roundLeaderboard[item].name,
+        team_id: roundLeaderboard[item].team_id,
+        id: item,
+      },
+      score: roundLeaderboard[item].score,
+    })
   )
 
   if (ended)
@@ -180,7 +192,9 @@ export default function Dealers({
                 {dealingTeams.map((player, index) => (
                   <button
                     key={index}
-                    onClick={() => awardPointToPlayer(player.clientId, false)}
+                    onClick={() =>
+                      awardPointToPlayer(player.clientId, false, player.team_id)
+                    }
                     className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
                     {player.name}
                   </button>
@@ -200,7 +214,13 @@ export default function Dealers({
                   {bonusLineup.slice(0, 5).map((player, index) => (
                     <button
                       key={index}
-                      onClick={() => awardPointToPlayer(player.clientId, true)}
+                      onClick={() =>
+                        awardPointToPlayer(
+                          player.clientId,
+                          true,
+                          player.team_id
+                        )
+                      }
                       className=' h-10 rounded-md bg-black/60 w-full text-xs px-2 text-left flex items-center gap-2'>
                       {index + 1} <Hand size={18} className='text-primary' />{' '}
                       {player.name}

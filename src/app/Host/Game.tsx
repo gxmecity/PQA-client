@@ -13,12 +13,14 @@ import { Dices } from 'lucide-react'
 interface Props {
   data: QuizEvent
   user: User
+  resetData: () => void
 }
 
-export default function Game({ data, user }: Props) {
+export default function Game({ data, user, resetData }: Props) {
   const { data: quiz, isLoading } = useGetUserQuizDetailsQuery(data.quiz)
   const [seconds, setSeconds] = useState<number>(0)
   const [startingRound, setstartingRound] = useState<boolean>(false)
+  const [lastResult, setLastResult] = useState(false)
 
   const [globalGameState, setglobalGameState] = useState<GameState>({
     players: [],
@@ -48,6 +50,9 @@ export default function Game({ data, user }: Props) {
     hostChannel.subscribe('sync-state', (msg) => {
       setglobalGameState(msg.data)
     })
+    hostChannel.subscribe('last-result', (msg) => {
+      setLastResult(msg.data.isLastResult)
+    })
   }
 
   const sunscribeToRoomChannels = () => {
@@ -60,6 +65,11 @@ export default function Game({ data, user }: Props) {
     roomChannel.subscribe('start-round-timer', (msg) => {
       setSeconds(msg.data.countDownSec)
       setstartingRound(true)
+    })
+    roomChannel.subscribe('close-room', () => {
+      resetData()
+      hostChannel.detach()
+      roomChannel.detach()
     })
   }
 
@@ -91,7 +101,11 @@ export default function Game({ data, user }: Props) {
       </div>
       <section className=' flex-auto w-full max-w-5xl px-5'>
         {globalGameState.quiz_ended ? (
-          <FinalResults />
+          <FinalResults
+            scores={globalGameState.leaderboard}
+            lastResult={lastResult}
+            hostChannel={hostChannel}
+          />
         ) : globalGameState.quiz_started ? (
           <>
             {quiz.rounds[globalGameState.activeRound].round_type ===
@@ -142,6 +156,7 @@ export default function Game({ data, user }: Props) {
             startBroadCast={openQuizRoom}
             startQuiz={startQuiz}
             joinCode={data.entry_code!}
+            totalPlayers={globalGameState.players.length}
           />
         )}
       </section>

@@ -30,7 +30,7 @@ export default function GameInterface({
       {joinCode && (
         <div className=' bg-black/40  w-max top-3 h-max py-3 rounded-lg px-2 sm:text-sm flex items-center absolute text-white'>
           <h3>
-            Join @ quiz.gxmecity.com | Use code{' '}
+            Join @ {window.location.hostname}/play | Use code{' '}
             <span className='bg-black/60 font-medium px-2 py-2 rounded-md'>
               {splitCodeInHalf(joinCode)}
             </span>
@@ -49,7 +49,7 @@ export default function GameInterface({
       )}
       <div className=' w-full flex items-center gap-8'>
         <span className='h-[2px] bg-black w-[5%]'></span>
-        <span className=' w-[8%]'>
+        <span className=' w-[6%]'>
           <AppLogo variant='white' />
         </span>
         <span className='h-[2px] bg-black flex-auto'></span>

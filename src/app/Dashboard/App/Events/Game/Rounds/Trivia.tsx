@@ -82,8 +82,15 @@ export default function Trivia({
 
   const roundLeaderboard = scores[`round-${roundindex}`]
 
-  const roundScores = Object.keys(roundLeaderboard).map(
-    (item) => roundLeaderboard[item]
+  const roundScores: LeaderboardEntry[] = Object.keys(roundLeaderboard).map(
+    (item) => ({
+      player: {
+        name: roundLeaderboard[item].name,
+        team_id: roundLeaderboard[item].team_id,
+        id: item,
+      },
+      score: roundLeaderboard[item].score,
+    })
   )
 
   if (ended)

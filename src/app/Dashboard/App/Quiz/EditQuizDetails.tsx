@@ -50,7 +50,6 @@ export default function EditQuizDetails({ quiz }: Props) {
   >(null)
 
   const handleUpdateQuiz: SubmitHandler<Partial<Quiz>> = async (data) => {
-    console.log(data)
     try {
       await updateQuizDetails({
         id: quiz._id,

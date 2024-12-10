@@ -15,6 +15,12 @@ export function Component() {
   const [event, setEvent] = useState<QuizEvent | null>(null)
   const [player, setPlayer] = useState<QuizPlayer | null>(null)
 
+  const resetPlayerState = () => {
+    setEvent(null)
+    setPlayer(null)
+    localStorage.removeItem('pqa_player_game_data')
+  }
+
   if (!event)
     return (
       <main className=' h-full flex flex-col'>
@@ -45,7 +51,7 @@ export function Component() {
             <AppLogo />
           </div>
         </div>
-        <Game user={player} data={event} />
+        <Game user={player} data={event} exitRoom={resetPlayerState} />
       </main>
     </>
   )

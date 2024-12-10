@@ -24,6 +24,7 @@ export const eventsAndSeriesApiSlice = apiSlice.injectEndpoints({
         url: `/events/event/${id}`,
         method: 'GET',
       }),
+      providesTags: ['Event-Details'],
       transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
     }),
     updateQuizEvent: builder.mutation<
@@ -35,6 +36,7 @@ export const eventsAndSeriesApiSlice = apiSlice.injectEndpoints({
         method: 'PATCH',
         data,
       }),
+      invalidatesTags: ['Event-Details'],
       transformResponse: (res: SuccessHttpResponse<QuizEvent>) => res.data,
     }),
     getEventByHostCode: builder.query<QuizEvent, string>({

@@ -10,8 +10,8 @@ interface Props {
 export default function ErrorMessage({ variant, title, description }: Props) {
   return (
     <Alert variant={variant}>
-      {variant === 'destructive' && <AlertCircle className='h-4 w-4' />}
-      <AlertTitle>{title}</AlertTitle>
+      {variant === 'destructive' && <AlertCircle className='h-5 w-5' />}
+      <AlertTitle className=' font-semibold'>{title}</AlertTitle>
       {description && <AlertDescription>{description}</AlertDescription>}
     </Alert>
   )

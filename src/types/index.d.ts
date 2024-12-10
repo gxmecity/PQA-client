@@ -110,22 +110,13 @@ declare interface Round {
   _id: string
 }
 
-declare interface Score {
-  player: {
-    name: string
-    id: string
-    team_id?: string
-  }
-  score: number
-}
-
 declare interface QuizEvent {
   title: string
   host_entry_code?: string
   entry_code?: string
   quiz: string
   scheduled_date?: Date
-  leaderboard: Score[]
+  leaderboard: LeaderboardEntry[]
   creator: User
   _id: string
   createdAt: string
@@ -139,4 +130,13 @@ declare interface Player {
   team_id?: string
   clientId: string
   avatar_url?: string
+}
+
+declare interface LeaderboardEntry {
+  player: {
+    name: string
+    id: string
+    team_id?: string
+  }
+  score: number
 }

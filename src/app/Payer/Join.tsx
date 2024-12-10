@@ -1,11 +1,13 @@
 import AppButton from '@/components/AppButton'
 import AppLogo from '@/components/AppLogo'
+import ErrorMessage from '@/components/ErrorMessage'
 import FormInput from '@/components/FormInput'
 import { Form } from '@/components/ui/form'
 import { errorResponseHandler } from '@/lib/utils'
 import { joinRoomSchema } from '@/schemas'
 import { useLazyGetEventByEntryCodeQuery } from '@/services/events'
 import { zodResolver } from '@hookform/resolvers/zod'
+import { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 
 interface Props {
@@ -13,6 +15,10 @@ interface Props {
 }
 
 export default function Join({ setEvent }: Props) {
+  const [errorMessage, setErrorMessage] = useState<{
+    title: string
+    desc: string
+  } | null>(null)
   const form = useForm({
     resolver: zodResolver(joinRoomSchema),
     defaultValues: {
@@ -24,12 +30,21 @@ export default function Join({ setEvent }: Props) {
     useLazyGetEventByEntryCodeQuery()
 
   const handleSubmit: SubmitHandler<{ code: string }> = async ({ code }) => {
+    setErrorMessage(null)
     try {
       const event = await getEventbyCode(code).unwrap()
 
       setEvent(event)
+      if (!event)
+        setErrorMessage({
+          title: 'Not Found',
+          desc: 'Event with this entry code does not exist',
+        })
     } catch (error: any) {
-      errorResponseHandler(error)
+      setErrorMessage({
+        title: 'An Error occured',
+        desc: error.data.message ?? 'Something went wrong',
+      })
     }
   }
 
@@ -47,7 +62,17 @@ export default function Join({ setEvent }: Props) {
         </div>
 
         <Form {...form}>
-          <form className=' w-full' onSubmit={form.handleSubmit(handleSubmit)}>
+          <form
+            className=' w-full flex flex-col gap-5'
+            onSubmit={form.handleSubmit(handleSubmit)}>
+            {errorMessage && (
+              <ErrorMessage
+                title={errorMessage.title}
+                variant='destructive'
+                description={errorMessage.desc}
+              />
+            )}
+
             <FormInput
               form={form}
               name='code'

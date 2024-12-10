@@ -6,7 +6,7 @@ interface Props {
   broadcast: boolean
   startBroadCast: () => void
   startQuiz: () => void
-
+  totalPlayers: number
   joinCode: string
 }
 
@@ -14,13 +14,14 @@ export default function WaitingArea({
   broadcast,
   startBroadCast,
   joinCode,
+  totalPlayers,
   startQuiz,
 }: Props) {
   return (
     <section className=' h-full'>
       <div className=' h-full flex flex-col gap-4 text-center justify-around items-center pt-8'>
         <div>
-          <div className=' w-24'>
+          <div className=' w-24 mx-auto'>
             <AppLogo />
           </div>
           <h1 className=' text-primary text-3xl font-bold'>
@@ -86,6 +87,7 @@ export default function WaitingArea({
                 classname=' h-12 mt-8 font-bold w-full max-w-[200px]  text-primary border-primary'
                 variant='outline'
                 onClick={startQuiz}
+                disabled={totalPlayers < 1}
               />
             </>
           )}

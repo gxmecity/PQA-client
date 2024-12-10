@@ -61,8 +61,7 @@ export function Component() {
     teamData.append('quiz_master', user._id)
 
     try {
-      const response = await registerTeam(teamData).unwrap()
-      console.log(response)
+      await registerTeam(teamData).unwrap()
 
       form.reset()
       toast.success('Team Registered Successfully')

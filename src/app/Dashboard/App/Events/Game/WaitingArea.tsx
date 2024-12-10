@@ -45,6 +45,7 @@ export default function WaitingArea({
         text='Start Game'
         classname=' h-12 bg-black text-primary hover:bg-black font-bold w-full max-w-[300px] text-lg'
         onClick={startQuiz}
+        disabled={joinedPlayers.length < 1}
       />
     </div>
   )

@@ -1,6 +1,6 @@
 import LeaderboardItem from '@/components/LeaderboardItem'
 
-export type LeaderboardEntry = { name: string; score: number }
+export type LeaderboardItem = { name: string; score: number }
 interface Props {
   scores: LeaderboardEntry[]
 }
@@ -12,7 +12,7 @@ export default function Leaderboard({ scores }: Props) {
         <LeaderboardItem
           key={index}
           index={index + 1}
-          name={player.name}
+          name={player.player.name}
           score={player.score}
         />
       ))}

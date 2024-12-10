@@ -1,6 +1,7 @@
 import AppButton from '@/components/AppButton'
 import { cn } from '@/lib/utils'
 import { DealersChoiceProps } from '../Dashboard/App/Events/Game/Rounds/Dealers'
+import { Button } from '@/components/ui/button'
 
 type Props = Omit<DealersChoiceProps, 'startTimerFunction' | 'roomChannel'>
 
@@ -28,7 +29,6 @@ export default function Dealers({
 
   const goToNextRound = () => {
     if (isLastRound) {
-      console.log('last')
       hostChannel.publish('final-result', '')
     } else {
       hostChannel.publish('next-round', {
@@ -60,11 +60,16 @@ export default function Dealers({
     }
   }
 
-  const awardPointToPlayer = async (playerId: string, isBonus: boolean) => {
+  const awardPointToPlayer = async (
+    playerId: string,
+    isBonus: boolean,
+    team_id?: string
+  ) => {
     await hostChannel.publish('award-point', {
       playerId,
       isBonus,
       activeRound: roundindex,
+      team_id,
     })
 
     hostChannel.publish('reveal-answer', {
@@ -73,9 +78,10 @@ export default function Dealers({
     })
   }
 
-  const activeQuestion = activeQuestionIndex
-    ? round.questions[activeQuestionIndex]
-    : undefined
+  const activeQuestion =
+    activeQuestionIndex !== null
+      ? round.questions[activeQuestionIndex]
+      : undefined
 
   const roundLeaderboard = scores[`round-${roundindex}`]
 
@@ -106,17 +112,19 @@ export default function Dealers({
         <div>
           <h3 className='text-xl font-semibold'>Standings</h3>
           <div className=' mt-5'>
-            {roundScores.map((player, index) => (
-              <div
-                key={index}
-                className=' flex items-center gap-5 h-14  px-2 border border-border'>
-                <span>{index + 1}</span>
-                <span className=' flex-auto flex items-center pl-2 truncate border-x border-x-border h-full'>
-                  {player.name}
-                </span>
-                <span className=' ml-auto'>{player.score}pts</span>
-              </div>
-            ))}
+            {roundScores
+              .sort((a, b) => b.score - a.score)
+              .map((player, index) => (
+                <div
+                  key={index}
+                  className=' flex items-center gap-5 h-14  px-2 border border-border'>
+                  <span>{index + 1}</span>
+                  <span className=' flex-auto flex items-center pl-2 truncate border-x border-x-border h-full'>
+                    {player.name}
+                  </span>
+                  <span className=' ml-auto'>{player.score}pts</span>
+                </div>
+              ))}
           </div>
         </div>
       </section>
@@ -226,32 +234,42 @@ export default function Dealers({
         <p>{activeQuestion?.answer.answer_text}</p>
       </div>
 
-      <div className=' mb-5'>
-        <p className=' mb-2 font-medium'>Point To: </p>
-        <div className=' flex gap-3 flex-wrap'>
-          {dealingTeams.map((team, index) => (
-            <span
-              key={index}
-              onClick={() => awardPointToPlayer(team.clientId, false)}
-              className=' border border-primary px-3 py-2 rounded-md'>
-              We Know Nothing
-            </span>
-          ))}
-        </div>
-      </div>
-      <div>
-        <p className=' mb-2 font-medium'>Bonus To: </p>
-        <div className=' flex gap-3 flex-wrap'>
-          {bonusLineup.map((team, index) => (
-            <span
-              key={index}
-              onClick={() => awardPointToPlayer(team.clientId, true)}
-              className=' border border-primary px-3 py-2 rounded-md'>
-              We Know Nothing
-            </span>
-          ))}
-        </div>
-      </div>
+      {!revealAnswer && (
+        <>
+          <div className=' mb-5'>
+            <p className=' mb-2 font-medium'>Point To: </p>
+            <div className=' flex gap-3 flex-wrap'>
+              {dealingTeams.map((team, index) => (
+                <Button
+                  disabled={seconds > 0}
+                  key={index}
+                  onClick={() =>
+                    awardPointToPlayer(team.clientId, false, team.team_id)
+                  }
+                  className=' border border-primary px-3 py-2 rounded-md'>
+                  {team.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <p className=' mb-2 font-medium'>Bonus To: </p>
+            <div className=' flex gap-3 flex-wrap'>
+              {bonusLineup.map((team, index) => (
+                <Button
+                  key={index}
+                  disabled={seconds > 0}
+                  onClick={() =>
+                    awardPointToPlayer(team.clientId, true, team.team_id)
+                  }
+                  className=' border border-primary px-3 py-2 rounded-md'>
+                  {team.name}
+                </Button>
+              ))}
+            </div>
+          </div>
+        </>
+      )}
 
       <AppButton
         text={!revealAnswer ? 'Reveal answer' : 'Next Question'}

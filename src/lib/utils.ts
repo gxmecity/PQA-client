@@ -111,3 +111,43 @@ export const initializeRoundLeaderboard = (rounds: any[]): RoundLeaderboard => {
 
   return initialLeaderboard
 }
+
+export const computeFinalLeaderboard = (scores: RoundLeaderboard) => {
+  const finalScores: { [key: string]: LeaderboardEntry } = {}
+
+  // Aggregate scores across rounds
+  for (const round in scores) {
+    for (const playerId in scores[round]) {
+      const player = scores[round][playerId]
+      if (!finalScores[playerId]) {
+        finalScores[playerId] = {
+          player: { name: player.name, id: playerId, team_id: player.team_id },
+          score: 0,
+        }
+      }
+      finalScores[playerId].score += player.score
+    }
+  }
+
+  // Convert aggregated scores into leaderboard array
+  const leaderboard: LeaderboardEntry[] = Object.values(finalScores)
+
+  // Sort by score in descending order
+  leaderboard.sort((a, b) => b.score - a.score)
+
+  return leaderboard
+}
+
+export const nthNumber = (number: number) => {
+  if (number > 3 && number < 21) return 'th'
+  switch (number % 10) {
+    case 1:
+      return 'st'
+    case 2:
+      return 'nd'
+    case 3:
+      return 'rd'
+    default:
+      return 'th'
+  }
+}

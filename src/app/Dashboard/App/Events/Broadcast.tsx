@@ -11,7 +11,7 @@ import {
 import { useLazyGetUserQuizDetailsQuery } from '@/services/quiz'
 import { RealtimeChannel } from 'ably'
 import { useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { Link, useParams } from 'react-router-dom'
 import { toast } from 'sonner'
 import Game from './Game/Game'
 import EmptyState from '@/components/EmptyState'
@@ -81,33 +81,56 @@ export function Component() {
 
   return (
     <main className=' h-dvh bg-gradient-to-tr from-white to-primary flex items-center justify-center text-center'>
-      {roomReady && gameEventData && gameEventData.quiz ? (
-        <Game data={gameEventData} />
-      ) : roomReady && gameEventData && !gameEventData.quiz ? (
+      {data.event_ended ? (
         <GameInterface>
           <EmptyState
-            title='Quiz Not Found'
-            description='Opps. Seems like we could not find your quiz data'
-          />
-        </GameInterface>
-      ) : (
-        <GameInterface>
-          <div className=' text-black max-w-5xl mx-auto flex flex-col items-center justify-between h-full'>
-            <h1 className=' font-bold text-2xl'>{data.title}</h1>
-            <p className=''>Game Host: {data.creator.fullname}</p>
-            <div className=' h-64 flex items-center justify-center'>
-              <div className='w-72'>
+            icon={
+              <div className='w-36'>
                 <AppLogo variant='white' />
               </div>
-            </div>
-            <AppButton
-              text='Create Quiz Room'
-              classname=' h-12 bg-black text-primary hover:bg-black font-bold w-full max-w-[300px] text-lg'
-              onClick={createQuizRoom}
-              loading={updatingEvent || fetchingGame}
-            />
-          </div>
+            }
+            title='Game Event Ended'
+            description='Event event ended and quiz room closed. Start a new event from your dashboard'>
+            <Link
+              to='/dashboard/events'
+              className='h-12 flex items-center justify-center px-5 rounded-md bg-black text-primary hover:bg-black font-bold w-max '>
+              Back to Dashboard
+            </Link>
+          </EmptyState>
         </GameInterface>
+      ) : (
+        <>
+          {roomReady && gameEventData && gameEventData.quiz ? (
+            <Game data={gameEventData} />
+          ) : roomReady && gameEventData && !gameEventData.quiz ? (
+            <GameInterface>
+              <EmptyState
+                title='Quiz Not Found'
+                description='Opps. Seems like we could not find your quiz data'
+              />
+            </GameInterface>
+          ) : (
+            <GameInterface>
+              <div className=' text-black max-w-5xl mx-auto flex flex-col items-center justify-between h-full'>
+                <div>
+                  <h1 className=' font-bold text-2xl'>{data.title}</h1>
+                  <p className=''>Game Host: {data.creator.fullname}</p>
+                </div>
+                <div className=' h-64 flex items-center justify-center'>
+                  <div className='w-72'>
+                    <AppLogo variant='white' />
+                  </div>
+                </div>
+                <AppButton
+                  text='Create Quiz Room'
+                  classname=' h-12 bg-black text-primary hover:bg-black font-bold w-full max-w-[300px] text-lg'
+                  onClick={createQuizRoom}
+                  loading={updatingEvent || fetchingGame}
+                />
+              </div>
+            </GameInterface>
+          )}
+        </>
       )}
     </main>
   )

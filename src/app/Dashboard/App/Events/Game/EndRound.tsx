@@ -4,7 +4,7 @@ import Leaderboard from './Leaderboard'
 interface Props {
   isLastRound: boolean
   RoundTitle: string
-  scores: { name: string; score: number }[]
+  scores: LeaderboardEntry[]
   nextStep: () => void
 }
 
@@ -19,6 +19,8 @@ export default function EndRound({
       nextStep()
     }
   }
+
+  const sortedLeaderBoard = scores.sort((a, b) => b.score - a.score)
 
   useEffect(() => {
     window.addEventListener('keydown', handleKeyPress)
@@ -36,7 +38,7 @@ export default function EndRound({
           <h1 className=' text-2xl font-semibold'>Standings - {RoundTitle}</h1>
           <span className=' h-[2px] bg-black flex-auto'></span>
         </div>
-        <Leaderboard scores={scores} />
+        <Leaderboard scores={sortedLeaderBoard} />
       </div>
       {isLastRound ? (
         <button
