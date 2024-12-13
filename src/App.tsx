@@ -8,6 +8,7 @@ import { Provider } from 'react-redux'
 import { Toaster } from '@/components/ui/sonner'
 import { AblyProvider } from 'ably/react'
 import { ablyClient } from './lib/ably'
+import * as Sentry from '@sentry/react'
 
 function App() {
   const router = getApp()
@@ -24,4 +25,4 @@ function App() {
   )
 }
 
-export default App
+export default Sentry.withProfiler(App)
