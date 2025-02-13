@@ -15,13 +15,14 @@ import {
 } from '@/lib/utils'
 import { useUpdateQuizEventMutation } from '@/services/events'
 import { PresenceMessage } from 'ably'
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { toast } from 'sonner'
 import { GameEvent } from '../Broadcast'
 import FinalResultComponent from './FinalResultComponent'
 import Dealers from './Rounds/Dealers'
 import Trivia from './Rounds/Trivia'
 import WaitingArea from './WaitingArea'
+import buzzer from '@/assets/Buzzer Sound Effect.wav'
 
 interface Props {
   data: GameEvent
@@ -79,6 +80,7 @@ export default function Game({ data }: Props) {
   const [open, setOpen] = useState(true)
   const [seconds, setSeconds] = useState(0)
   const [startingRound, setStartingRound] = useState(false)
+  const audioRef = useRef<HTMLAudioElement | null>(null)
 
   const [finalResultState, setFinalResultState] =
     useState<FinalResultDisplayState>({
@@ -589,6 +591,7 @@ export default function Game({ data }: Props) {
             },
           ],
         }
+        playSound()
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
@@ -664,6 +667,12 @@ export default function Game({ data }: Props) {
     }))
 
     roomChannel.publish('end-quiz', { quiz_ended: true, leaderboard })
+  }
+
+  const playSound = () => {
+    if (audioRef.current) {
+      audioRef.current.play()
+    }
   }
 
   if (!globalGameState.roomOpen)
@@ -790,6 +799,7 @@ export default function Game({ data }: Props) {
               answeredQuestions={globalGameState.answeredQuestions}
             />
           )}
+          <audio ref={audioRef} src={buzzer} />
         </>
       )}
     </GameInterface>

@@ -1,6 +1,8 @@
 import AppButton from '@/components/AppButton'
+import AppDialog from '@/components/AppDialog'
 import AppLogo from '@/components/AppLogo'
 import { splitCodeInHalf } from '@/lib/utils'
+import { useState } from 'react'
 
 interface Props {
   broadcast: boolean
@@ -17,6 +19,8 @@ export default function WaitingArea({
   totalPlayers,
   startQuiz,
 }: Props) {
+  const [open, setOpen] = useState(false)
+
   return (
     <section className=' h-full'>
       <div className=' h-full flex flex-col gap-4 text-center justify-around items-center pt-8'>
@@ -86,13 +90,33 @@ export default function WaitingArea({
                 text='Start Quiz'
                 classname=' h-12 mt-8 font-bold w-full max-w-[200px]  text-primary border-primary'
                 variant='outline'
-                onClick={startQuiz}
-                disabled={totalPlayers < 1}
+                onClick={
+                  totalPlayers < 1 ? () => setOpen(true) : () => startQuiz()
+                }
               />
             </>
           )}
         </div>
       </div>
+      <AppDialog
+        open={open}
+        setOpen={setOpen}
+        title='No Team/Players Joined'
+        description='There are currently no teams or players joined in your event.'>
+        <div className=' flex items-center justify-between gap-5'>
+          <AppButton
+            text='Cancel'
+            variant='outline'
+            classname=' h-12 bg-black  font-bold w-full max-w-[300px]'
+            onClick={() => setOpen(false)}
+          />
+          <AppButton
+            text='Start Game Anyway'
+            classname=' h-12 bg-black text-primary hover:bg-black font-bold w-full max-w-[300px] '
+            onClick={startQuiz}
+          />
+        </div>
+      </AppDialog>
     </section>
   )
 }
