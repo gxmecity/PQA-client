@@ -191,7 +191,6 @@ export default function Game({ data }: Props) {
             [`round-${msg.data.activeRound}`]: newRoundData,
           },
         }
-        console.log(newRoundData)
         liveSyncWithHostDevice(updatedState)
         return updatedState
       })
@@ -527,8 +526,6 @@ export default function Game({ data }: Props) {
       name: player.data.name,
     }
 
-    console.log(newPlayerData)
-
     setGlobalGameState((prev) => {
       const updatedState = {
         ...prev,
@@ -617,8 +614,6 @@ export default function Game({ data }: Props) {
 
       playerScoreData.score += point
       updatedRoundScores[playerId] = playerScoreData
-
-      console.log(playerScoreData)
 
       const updatedState: GameState = {
         ...prev,
