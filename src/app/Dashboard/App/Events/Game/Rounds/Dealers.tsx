@@ -214,7 +214,7 @@ export default function Dealers({
                   <span className=' flex-auto h-[1px] bg-white/60'></span>
                 </div>
                 <AnimatedList>
-                  {bonusLineup.slice(0, 5).map((player, index) => (
+                  {bonusLineup.map((player, index) => (
                     <button
                       key={index}
                       onClick={() =>
