@@ -121,6 +121,9 @@ export default function Trivia({
             activeRound: roundindex,
           })
         }}
+        skipRound={() => {
+          hostChannel.publish('end-round', {})
+        }}
         title={round.round_name}
       />
     )

@@ -152,6 +152,9 @@ export default function Dealers({
             activeRound: roundindex,
           })
         }}
+        skipRound={() => {
+          hostChannel.publish('end-round', {})
+        }}
         title={round.round_name}
       />
     )
