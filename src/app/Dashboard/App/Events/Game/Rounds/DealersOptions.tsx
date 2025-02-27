@@ -59,7 +59,7 @@ export default function DealersOptions({
               disabled={answeredQuestions.includes(index)}
               onClick={() => selectQuestion(index)}
               className={cn(
-                'w-16 h-16 border border-black rounded-full flex items-center justify-center hover:bg-black hover:text-white',
+                'w-16 h-16 border border-black font-semibold rounded-full flex items-center justify-center hover:bg-black hover:text-white',
                 answeredQuestions.includes(index) &&
                   'bg-black text-white opacity-50'
               )}>

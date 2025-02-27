@@ -140,7 +140,7 @@ export default function Question({
                 Question {questionNumber}
               </p>
               <div className=' flex w-full flex-auto gap-2 justify-between'>
-                <h1 className=' font-bold text-5xl'>{data.question_text}</h1>
+                <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
                 {!data.standalone_media && data.question_media?.url && (
                   <div className=' w-[400px]'>
                     {data.question_media.type === 'image' && (
