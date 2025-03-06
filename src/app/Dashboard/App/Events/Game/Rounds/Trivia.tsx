@@ -70,6 +70,10 @@ export default function Trivia({
     }
   }
 
+  const restartRound = () => {
+    hostChannel.publish('restart-round', undefined)
+  }
+
   const goToNextRound = () => {
     if (isLastRound) {
       hostChannel.publish('final-result', '')
@@ -149,6 +153,7 @@ export default function Trivia({
       totalTime={round.timer}
       goToNext={goToNextQuestion}
       startTimer={startTimerFunction}
+      restartRound={restartRound}
     />
   )
 }

@@ -50,8 +50,8 @@ export default function DealersOptions({
           </div>
         </div>
       )}
-      <div className=' h-full flex max-w-5xl mx-auto flex-col justify-start px-1'>
-        <div className=' flex flex-auto w-full flex-wrap gap-4  items-center justify-center'>
+      <div className=' h-full flex max-w-[1400px] mx-auto flex-col justify-start px-1'>
+        <div className=' flex h-full max-h-full overflow-auto w-full flex-wrap gap-4  items-center justify-center'>
           {Array.from({ length: questions }).map((_, index) => (
             <button
               type='button'
@@ -59,7 +59,7 @@ export default function DealersOptions({
               disabled={answeredQuestions.includes(index)}
               onClick={() => selectQuestion(index)}
               className={cn(
-                'w-16 h-16 border border-black font-semibold rounded-full flex items-center justify-center hover:bg-black hover:text-white',
+                'w-20 h-20 border-2 border-black font-semibold text-5xl rounded-full flex items-center justify-center hover:bg-black hover:text-white',
                 answeredQuestions.includes(index) &&
                   'bg-black text-white opacity-50'
               )}>

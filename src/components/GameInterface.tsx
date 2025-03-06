@@ -16,7 +16,7 @@ export default function GameInterface({
   hostDevices,
 }: Props) {
   return (
-    <div className=' text-black h-full flex items-center flex-col justify-between py-10 gap-8 w-full relative'>
+    <div className=' text-black h-full flex items-center flex-col justify-between py-10 gap-4 w-full relative'>
       {numberOfPlayers !== undefined && (
         <div className=' bg-black/40  w-max bottom-3 h-max py-3 rounded-lg px-2 sm:text-sm flex items-center absolute left-8 text-white'>
           <h3>
@@ -54,7 +54,7 @@ export default function GameInterface({
         </span>
         <span className='h-[2px] bg-black flex-auto'></span>
       </div>
-      <div className=' flex-auto w-full max-w-5xl'>{children}</div>
+      <div className=' flex-auto w-full px-10'>{children}</div>
       <div className=' w-full flex items-center gap-20'>
         <span className='h-[2px] bg-black flex-auto'></span>
       </div>

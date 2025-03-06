@@ -228,6 +228,7 @@ export default function Game({ data }: Props) {
       })
       if (!shouldNotpublish) publishQuestion(nextQuestionIndex, roundIndex)
     })
+
     hostChannel.subscribe('set-question-index', (msg) => {
       const nextQuestionIndex = msg.data.questionIndex
       const activeRound = msg.data.activeRound
@@ -258,6 +259,17 @@ export default function Game({ data }: Props) {
       }
 
       roomChannel.publish('allow-bonus', { allowBonus: false })
+    })
+    hostChannel.subscribe('restart-round', () => {
+      setGlobalGameState((prev) => {
+        const updatedState = {
+          ...prev,
+          activeQuestionIndex: 0,
+        }
+        liveSyncWithHostDevice(updatedState)
+
+        return updatedState
+      })
     })
     hostChannel.subscribe('start-answer-reveal', () => {
       setGlobalGameState((prev) => {

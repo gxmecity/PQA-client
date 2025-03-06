@@ -13,6 +13,7 @@ interface Props {
   goToNext: () => void
   shouldCountdown: boolean
   startTimer: (arg?: () => void) => void
+  restartRound?: () => void
 }
 
 export default function Question({
@@ -25,11 +26,16 @@ export default function Question({
   shouldCountdown,
   goToNext,
   startTimer,
+  restartRound,
 }: Props) {
   const [animate, setAnimate] = useState(false)
   const [videoPlayed, setVideoPlayed] = useState(false)
   const [playingVideo, setPlayingVideo] = useState(false)
   const videoEl = useRef<any>(null)
+
+  const restartGameRound = () => {
+    if (restartRound) restartRound()
+  }
 
   const attemptPlay = async () => {
     if (videoEl && videoEl.current) {
@@ -50,6 +56,10 @@ export default function Question({
   const handleKeyPress = (event: KeyboardEvent) => {
     if (event.key === 'Enter') {
       goToNext()
+    }
+
+    if (event.key.toLowerCase() === 'r') {
+      restartGameRound()
     }
   }
 
@@ -133,15 +143,21 @@ export default function Question({
           'flex h-full justify-center items-center',
           animate ? 'slide-in-elliptic-top-fwd' : ''
         )}>
-        <div className=' h-full w-full flex justify-center flex-col max-w-7xl mx-auto gap-16'>
+        <div className=' h-full w-full flex justify-center flex-col mx-auto gap-16'>
           <div className=' flex items-center gap-2 justify-between w-full'>
             <div className=' text-left w-full'>
-              <p className=' text-xl font-medium mb-3'>
+              <p className=' text-2xl font-semibold mb-3'>
                 Question {questionNumber}
               </p>
               <div className=' flex w-full flex-auto gap-2 justify-between'>
-                <h1 className=' font-bold text-6xl'>{data.question_text}</h1>
-                {!data.standalone_media && data.question_media?.url && (
+                <h1
+                  className={cn(
+                    ' font-bold',
+                    data.question_media?.url ? 'text-6xl' : 'text-[5rem]'
+                  )}>
+                  {data.question_text}
+                </h1>
+                {data.question_media?.url && (
                   <div className=' w-[400px]'>
                     {data.question_media.type === 'image' && (
                       <img src={data.question_media.url} alt='image' />
