@@ -2,6 +2,13 @@ import { apiSlice } from './apiSlice'
 
 export const quizApiSlice = apiSlice.injectEndpoints({
   endpoints: (builder) => ({
+    getQuizDetails: builder.query<Quiz, string>({
+      query: (id) => ({
+        url: `/quiz/${id}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<Quiz>) => res.data,
+    }),
     getUserCreatedQuiz: builder.query<Quiz[], undefined>({
       query: () => ({
         url: '/my-quiz',
@@ -10,6 +17,7 @@ export const quizApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Quiz'],
       transformResponse: (res: SuccessHttpResponse<Quiz[]>) => res.data,
     }),
+
     createNewQuiz: builder.mutation<Quiz, Pick<Quiz, 'title' | 'description'>>({
       query: (data) => ({
         url: '/my-quiz',
@@ -79,6 +87,7 @@ export const quizApiSlice = apiSlice.injectEndpoints({
 })
 
 export const {
+  useGetQuizDetailsQuery,
   useGetUserCreatedQuizQuery,
   useCreateNewQuizMutation,
   useGetUserQuizDetailsQuery,

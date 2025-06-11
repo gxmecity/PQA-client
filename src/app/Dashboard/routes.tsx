@@ -62,6 +62,11 @@ export const dashboardRoutes: RouteObject[] = [
     errorElement: <ErrorPage />,
   },
   {
+    path: '/quiz-event/:id',
+    lazy: () => import('./App/Events/QuizEvent/QuizEvent'),
+    errorElement: <ErrorPage />,
+  },
+  {
     path: '/play',
     lazy: () => import('../Payer/Player'),
     errorElement: <ErrorPage />,

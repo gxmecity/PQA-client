@@ -10,7 +10,7 @@ export default function AppAvater({ img_url, fallbackText }: Props) {
   return (
     <Avatar>
       <AvatarImage src={img_url} />
-      <AvatarFallback className=' bg-primary text-xs'>
+      <AvatarFallback className=' bg-game text-xs'>
         {fallback.slice(0, 3).map((word) => word.slice(0, 1))}
       </AvatarFallback>
     </Avatar>

@@ -1,6 +1,9 @@
-import { Clock, Pencil, Play } from 'lucide-react'
+import { cn } from '@/lib/utils'
+import { Computer, Pencil, Play, Users } from 'lucide-react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import AppButton from './AppButton'
+import AppDialog from './AppDialog'
 import { Button } from './ui/button'
 import {
   Card,
@@ -9,97 +12,113 @@ import {
   CardHeader,
   CardTitle,
 } from './ui/card'
-import { Popover, PopoverContent, PopoverTrigger } from './ui/popover'
-import { cn, errorResponseHandler } from '@/lib/utils'
-import { useCreateHostedEventMutation } from '@/services/events'
 
 interface Prop {
   data: Quiz
 }
 
+export const gameModes = [
+  {
+    name: 'In-person Mode',
+    mode: 'offline',
+    description:
+      'Players don’t answer with phones. The host controls the game and keeps scores manually.',
+    icon: <Users size={30} />,
+    active: true,
+  },
+  {
+    name: 'Online Mode',
+    mode: 'online',
+    description:
+      'Players join with their phones, answer questions in real time, and scores are tracked automatically.',
+    icon: <Computer size={30} />,
+    active: false,
+  },
+]
+
 const QuizItem = ({ data }: Prop) => {
   const navigate = useNavigate()
-
-  const [createEvent, { isLoading: creatingEvent }] =
-    useCreateHostedEventMutation()
+  const [open, setOpen] = useState(false)
+  const [selectedMode, setSelectedMode] = useState<number | null>(null)
 
   const handleCreateNewEvent = async () => {
-    if (creatingEvent) return
+    if (selectedMode === null) return
 
-    try {
-      const response = await createEvent({
-        title: data.title,
-        quiz: data._id,
-      }).unwrap()
+    const selectedGameMode = gameModes[selectedMode]
 
-      navigate(`/broadcast/${response._id}`)
-    } catch (error: any) {
-      errorResponseHandler(error)
-    }
+    navigate(`/quiz-event/${data._id}?mode=${selectedGameMode.mode}`)
   }
 
   return (
-    <Card>
-      <CardHeader>
-        <CardTitle className='mb-2'>{data.title}</CardTitle>
-        <CardDescription className=' text-xs italic'>
-          {data.publish ? 'Public' : 'Private'} Quiz by {data.creator.fullname}
-        </CardDescription>
-        <CardDescription className=' text-xs italic'>
-          This quiz has {data.rounds.length} rounds
-        </CardDescription>
-      </CardHeader>
-      <CardContent>
-        <div className=' flex gap-3 sm:flex-col'>
-          <AppButton
-            text='Edit'
-            variant='outline'
-            icon={<Pencil />}
-            onClick={() => navigate(`/dashboard/quiz/${data._id}`)}
-          />
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button>
-                <Play />
-                Play Game
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent>
-              <div className='flex flex-col gap-2'>
-                <div
-                  className={cn(
-                    'flex items-center gap-2 cursor-pointer',
-                    creatingEvent && 'text-muted'
-                  )}
-                  onClick={handleCreateNewEvent}>
-                  <Play size={30} />
-                  <span className='flex flex-col gap-1'>
-                    <small>
-                      {creatingEvent ? 'Creating Event...' : 'Instant Event'}
-                    </small>
-                    <small className=' text-xs text-muted-foreground'>
-                      Start an instant game with a group of friends
-                    </small>
-                  </span>
-                </div>
-                <div className=' flex items-center gap-2 cursor-pointer text-muted'>
-                  <Clock size={30} />
-                  <span className='flex flex-col gap-1'>
-                    <small>Scheduled Event</small>
-                    <small className=' text-xs'>
-                      Schedule a game with a group of friends for a later time
-                    </small>
-                    <small className='text-xs text-primary uppercase'>
-                      coming soon..
-                    </small>
-                  </span>
-                </div>
-              </div>
-            </PopoverContent>
-          </Popover>
+    <>
+      <Card>
+        <CardHeader>
+          <CardTitle className='mb-2'>{data.title}</CardTitle>
+          <CardDescription className=' text-xs italic'>
+            {data.publish ? 'Public' : 'Private'} Quiz by{' '}
+            {data.creator.fullname}
+          </CardDescription>
+          <CardDescription className=' text-xs italic'>
+            This quiz has {data.rounds.length} rounds
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className=' flex gap-3 sm:flex-col'>
+            <AppButton
+              text='Edit'
+              variant='outline'
+              icon={<Pencil />}
+              onClick={() => navigate(`/dashboard/quiz/${data._id}`)}
+            />
+            <AppButton
+              text='Play Quiz'
+              variant='default'
+              icon={<Play />}
+              onClick={() => setOpen(true)}
+            />
+          </div>
+        </CardContent>
+      </Card>
+      <AppDialog
+        open={open}
+        setOpen={setOpen}
+        title='Host a new Quiz Game'
+        description='Choose a mode to start the quiz'>
+        <div className='flex  gap-2 items-center'>
+          {gameModes.map((mode, index) => (
+            <Button
+              key={index}
+              variant={'outline'}
+              className={cn(
+                ' flex-auto h-16',
+                selectedMode === index && ' border-primary text-primary'
+              )}
+              onClick={() => setSelectedMode(index)}>
+              {mode.icon}
+              <p>{mode.name}</p>
+            </Button>
+          ))}
         </div>
-      </CardContent>
-    </Card>
+        {selectedMode !== null && (
+          <div className='mt-4 flex flex-col gap-3 text-center'>
+            <small className='text-xs text-muted-foreground '>
+              {gameModes[selectedMode].description}
+            </small>
+            {!gameModes[selectedMode].active && (
+              <small className='text-xs text-primary uppercase '>
+                coming soon..
+              </small>
+            )}
+            <Button
+              className='w-full'
+              disabled={!gameModes[selectedMode].active}
+              onClick={handleCreateNewEvent}>
+              Start Quiz
+            </Button>
+          </div>
+        )}
+      </AppDialog>
+    </>
   )
 }
 

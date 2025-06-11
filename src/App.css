@@ -21,6 +21,9 @@
 .gd-text-primary {
   @apply inline-block bg-gradient-to-tr from-white to-primary text-transparent bg-clip-text;
 }
+.gd-text-game {
+  @apply inline-block bg-gradient-to-tr from-white to-game text-transparent bg-clip-text;
+}
 
 .progress {
   --size: 100px;
