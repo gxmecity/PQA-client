@@ -1,6 +1,5 @@
 import AppLogo from '@/components/AppLogo'
 import EmptyState from '@/components/EmptyState'
-import GameInterface from '@/components/GamePlayInterface'
 import GameSplashScreen from '@/components/GameSplashScreen'
 import Loader from '@/components/Loader'
 import { gameModes } from '@/components/QuizItem'
@@ -66,16 +65,34 @@ export function Component() {
     })
   }
 
-  if (isLoading) return <Loader />
+  if (isLoading)
+    return (
+      <GameSplashScreen>
+        <Loader />
+      </GameSplashScreen>
+    )
 
   if (!quiz)
     return (
-      <GameInterface>
-        <EmptyState
-          title='Quiz Not Found'
-          description='The requested quiz could not be found.'
-        />
-      </GameInterface>
+      <GameSplashScreen>
+        <div className=' h-[300px] bg-game-background/55 backdrop-blur-xl backdrop-opacity-55 w-[500px] rounded-lg p-5 '>
+          <EmptyState
+            icon={
+              <div className=' w-[80px]'>
+                <AppLogo />
+              </div>
+            }
+            title='Quiz Not Found'
+            description='The requested quiz could not be found.'>
+            <Button
+              variant='outline'
+              className='w-max mx-auto h-12'
+              onClick={() => window.location.replace('/dashboard/quiz')}>
+              Back to Quiz Dashboard
+            </Button>
+          </EmptyState>
+        </div>
+      </GameSplashScreen>
     )
 
   if (eventChannels && roomOpen)
@@ -90,9 +107,18 @@ export function Component() {
 
   return (
     <GameSplashScreen>
-      <div className=' flex flex-col gap-10 items-center h-full justify-around'>
+      <div className=' flex flex-col gap-5 items-center h-full justify-around '>
         <div className=' w-[400px]'>
           <AppLogo />
+        </div>
+        <div className=' flex items-center flex-col gap-2'>
+          <h1 className=' text-5xl font-extrabold'>{quiz.title}</h1>
+          <p className=' text-sm'>
+            Quiz created by{' '}
+            <span className=' italic font-semibold'>
+              {quiz.creator.fullname}
+            </span>
+          </p>
         </div>
         <div className=' flex flex-col gap-2 items-center  bg-game-background/55 backdrop-blur-xl backdrop-opacity-55 w-[500px] rounded-lg p-5'>
           {creatingQuizRoom ? (
@@ -136,7 +162,7 @@ export function Component() {
                       variant={'ghost'}
                       onClick={() => {
                         setRoomOpen(true)
-                        globalQuizChannel.detach()
+                        // globalQuizChannel.detach()
                       }}
                       className='w-full max-w-[200px] mx-auto h-12 text-game'>
                       Continue to quiz room

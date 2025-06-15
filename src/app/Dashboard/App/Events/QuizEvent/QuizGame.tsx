@@ -1,10 +1,14 @@
-import { RealtimeChannel } from 'ably'
-import { useState } from 'react'
-import WaitingArea from './WaitingArea'
 import GameInterface from '@/components/GamePlayInterface'
-import { Button } from '@/components/ui/button'
-import { EnterFullScreenIcon, ExitFullScreenIcon } from '@radix-ui/react-icons'
-import useFullscreen from '@/hooks/useFullScreen'
+import { gameActions } from '@/redux/game'
+import { useAppDisPatch, useAppSelector } from '@/redux/store'
+import { RealtimeChannel } from 'ably'
+import { useEffect, useState, useCallback } from 'react'
+import QuizRound from './QuizRound'
+import WaitingArea from './WaitingArea'
+import GameControlPanel from './_components/GameControlPanel'
+import GameStatusBar from './_components/GameStatusBar'
+import GameSplashScreen from '@/components/GameSplashScreen'
+import StartGameScreen from './_components/StartGameScreen'
 
 interface QuizGameProps {
   hostChannel: RealtimeChannel
@@ -13,120 +17,158 @@ interface QuizGameProps {
   entryCode: string
 }
 
-interface GlobalGameState {
-  quiz_started: boolean
-  quiz_ended: boolean
-  round: {
-    title: string
-    type: string
-    time: number
-    index: number
-    round_started: boolean
-    round_ended: boolean
-    isLast: boolean
-  } | null
-  question: {
-    questionText: string
-    options: string[]
-    correctAnswerIndex: number
-  } | null
-  questionIndex: number | null
-}
-
 function QuizGame({
   hostChannel,
   roomChannel,
   hostEntryCode,
   entryCode,
 }: QuizGameProps) {
-  const [gameState, setGameState] = useState<GlobalGameState>({
-    quiz_started: false,
-    quiz_ended: false,
-    round: null,
-    question: null,
-    questionIndex: null,
-  })
+  const [timer, setTimer] = useState(0)
+  const [questionTimer, setQuestionTimer] = useState(0)
+  const [startingQuiz, setStartingQuiz] = useState(false)
 
-  const { isFullscreen, exitFullscreen, activateFullscreen } = useFullscreen()
+  const { quiz_started, quiz_ended } = useAppSelector((state) => state.game)
+  const dispatch = useAppDisPatch()
 
-  const [seconds, setSeconds] = useState<number>(0)
+  const handleMessage = useCallback(
+    (msg: any) => {
+      const { name, data } = msg
 
-  //   if (!gameState.quiz_started) return <WaitingArea roomCode={entryCode} />
+      switch (name) {
+        case 'quiz-started':
+          setStartingQuiz(true)
+          dispatch(
+            gameActions.updateGameState({
+              quiz_started: true,
+              round: data.round,
+              canRevealAnswer: data.canRevealAnswer,
+            })
+          )
+          break
+        case 'new-round':
+          dispatch(
+            gameActions.updateGameState({
+              round: data.round,
+              question: null,
+              canRevealAnswer: data.canRevealAnswer,
+              answeredQuestions: [],
+            })
+          )
+          break
+        case 'start-round':
+          dispatch(gameActions.updateGameRound({ round_started: true }))
+          break
+        case 'countdown-timer':
+          setTimer(data.timer)
+          break
+        case 'question-timer':
+          setQuestionTimer(data.timer)
+          console.log(data.timer)
+          break
+        case 'new-question':
+          dispatch(
+            gameActions.updateGameState({
+              question: data.question,
+              isRevealAnswer: false,
+              answeredQuestions: data.answeredQuestions,
+            })
+          )
+          break
+        case 'answer-reveal':
+          dispatch(gameActions.updateGameState({ canRevealAnswer: true }))
+          break
+        case 'show-answer':
+          dispatch(gameActions.updateGameState({ isRevealAnswer: true }))
+          break
+        case 'quiz-ended':
+          dispatch(gameActions.updateGameState({ quiz_ended: true }))
+          cleanupChannels()
+          break
+        default:
+          console.warn('Unhandled event:', name)
+      }
+    },
+    [dispatch]
+  )
+
+  const subscribeToRoomChannel = useCallback(() => {
+    const eventNames = [
+      'quiz-started',
+      'new-round',
+      'start-round',
+      'countdown-timer',
+      'question-timer',
+      'new-question',
+      'answer-reveal',
+      'show-answer',
+      'quiz-ended',
+    ]
+
+    eventNames.forEach((event) => {
+      roomChannel.subscribe(event, (msg) =>
+        handleMessage({ name: event, data: msg.data })
+      )
+    })
+
+    return () => {
+      eventNames.forEach((event) => roomChannel.unsubscribe(event))
+    }
+  }, [roomChannel, handleMessage])
+
+  const cleanupChannels = useCallback(() => {
+    try {
+      roomChannel.detach()
+      hostChannel.detach()
+    } catch (err) {
+      console.error('Error detaching channels:', err)
+    }
+  }, [roomChannel, hostChannel])
+
+  useEffect(() => {
+    subscribeToRoomChannel()
+  }, [])
+
+  if (quiz_ended)
+    return (
+      <GameSplashScreen>
+        <div className=' h-[300px] bg-game-background/55 backdrop-blur-xl backdrop-opacity-55 w-[500px] rounded-lg p-5 '>
+          Quiz Ended
+        </div>
+      </GameSplashScreen>
+    )
+
+  if (startingQuiz)
+    return (
+      <StartGameScreen onCompleteAnimation={() => setStartingQuiz(false)} />
+    )
+
+  if (!quiz_started) {
+    return (
+      <div className='h-screen flex flex-col'>
+        <GameStatusBar entryCode={entryCode} hostCode={hostEntryCode} />
+        <div className='flex-auto'>
+          <WaitingArea roomCode={entryCode} />
+        </div>
+        <GameControlPanel hostChannel={hostChannel} />
+      </div>
+    )
+  }
 
   return (
-    <div className=' h-screen flex flex-col'>
-      <div className=' h-8 bg-black/50 px-4 py-1 flex items-center gap-5 text-xs justify-between'>
-        <div className=' flex gap-2 items-center flex-1'>
-          <p>Total players: 10</p>
-          <p>Connected players: 8</p>
-          <p>Bonus: 10</p>
-        </div>
-        <div className='flex-1 flex justify-center'>
-          <span className=' text-white/70'>Room Code:</span>
-          <span className=' text-white font-bold'>{entryCode}</span>
-        </div>
-        <div className=' flex-1 flex justify-end'>
-          <p>Hosts: 0</p>
-        </div>
-      </div>
-      <div className=' flex-auto'>
-        <GameInterface roundTitle='FINISH THE LYRICS'>
-          <div className=' h-full'>
-            <p>Hello</p>
+    <div className='h-dvh flex flex-col'>
+      <GameStatusBar entryCode={entryCode} hostCode={hostEntryCode} />
+      <div className='flex-1 overflow-auto'>
+        <GameInterface>
+          <div className='h-full'>
+            <QuizRound
+              hostChannel={hostChannel}
+              timer={timer}
+              questionTimer={questionTimer}
+            />
           </div>
         </GameInterface>
       </div>
-      <div className=' h-8 bg-black/50 px-4 py-1 flex items-center gap-5 text-sm justify-between'>
-        <div className=' flex items-center gap-2'>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            Start/Restart Round
-          </Button>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            Skip/End Round
-          </Button>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            Next Question
-          </Button>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            Prev Question
-          </Button>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            Show Answer
-          </Button>
-        </div>
-        <div className=' flex items-center gap-2'>
-          <Button
-            className=' py-0 h-max text-xs bg-transparent'
-            variant={'ghost'}>
-            End Quiz
-          </Button>
-          {isFullscreen ? (
-            <Button
-              onClick={() => exitFullscreen()}
-              className=' py-0 h-max text-xs bg-transparent'
-              variant={'ghost'}>
-              <ExitFullScreenIcon />
-            </Button>
-          ) : (
-            <Button
-              onClick={() => activateFullscreen()}
-              className=' py-0 h-max text-xs bg-transparent'
-              variant={'ghost'}>
-              <EnterFullScreenIcon />
-            </Button>
-          )}
-        </div>
-      </div>
+      <GameControlPanel hostChannel={hostChannel} />
     </div>
   )
 }

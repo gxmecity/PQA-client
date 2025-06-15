@@ -47,6 +47,7 @@ export default {
         game: {
           DEFAULT: '#b1995f',
           background: '#1a1a1a',
+          foreground: '#c4c4c4',
         },
         secondary: {
           DEFAULT: 'hsl(var(--secondary))',

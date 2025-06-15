@@ -8,7 +8,7 @@ interface Props {
 
 function GameSplashScreen({ bagroundImage = bgImage, children }: Props) {
   return (
-    <div className=' h-screen overflow-hidden'>
+    <div className=' h-full overflow-hidden relative'>
       <div className=' absolute h-full w-full'>
         <img
           src={bagroundImage}

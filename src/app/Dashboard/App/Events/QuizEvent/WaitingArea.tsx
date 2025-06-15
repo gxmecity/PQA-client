@@ -1,9 +1,7 @@
 import AppAvater from '@/components/AppAvater'
 import AppLogo from '@/components/AppLogo'
 import GameSplashScreen from '@/components/GameSplashScreen'
-import { Button } from '@/components/ui/button'
 import { splitCodeInHalf } from '@/lib/utils'
-import { EnterFullScreenIcon } from '@radix-ui/react-icons'
 import QRCode from 'react-qr-code'
 
 interface Props {
@@ -11,10 +9,11 @@ interface Props {
 }
 
 function WaitingArea({ roomCode }: Props) {
+  const joinedPlayers: any[] = []
   return (
     <GameSplashScreen>
-      <div className=' h-full w-full flex flex-col gap-5 pt-5'>
-        <div className=' flex items-center justify-between px-5'>
+      <div className=' h-full w-full flex flex-col gap-5 p-5'>
+        <div className=' flex items-center justify-between '>
           <h1 className=' text-4xl font-bold animate-pulse'>
             Waiting for players to join....
           </h1>
@@ -22,7 +21,7 @@ function WaitingArea({ roomCode }: Props) {
             <AppLogo />
           </div>
         </div>
-        <div className=' flex-auto grid grid-cols-[70%_30%] gap-5 px-5'>
+        <div className=' flex-auto grid grid-cols-[70%_30%] gap-5'>
           <div className=' bg-game-background/30 rounded-lg p-4 flex flex-col gap-5'>
             <h1 className='text-game dharma-gothic-heavy text-5xl underline'>
               Joined Players
@@ -30,7 +29,7 @@ function WaitingArea({ roomCode }: Props) {
 
             <div className=' flex-auto grid grid-cols-2 gap-2 rounded-lg'>
               <div className='bg-game-background/50 flex flex-col gap-2 py-4'>
-                {Array.from({ length: 7 }).map((_, index) => (
+                {joinedPlayers.map((_, index) => (
                   <div
                     key={index}
                     className=' flex-auto max-h-16  bg-game-background/80 px-3 flex items-center gap-3'>
@@ -49,11 +48,12 @@ function WaitingArea({ roomCode }: Props) {
             <h2 className=' text-3xl font-extrabold underline'>
               Join the Quiz
             </h2>
-            <div className=' h-[350px] w-[350px] bg-game-background/50 rounded-lg p-3'>
+            <div className=' h-[400px] w-[400px] bg-game-background/50 rounded-lg p-3'>
               <div className=' bg-white w-full h-full rounded-lg flex flex-col gap-2 p-2 items-center'>
                 <p className='text-black'>Scan code to join</p>
-                <div className='flex-auto w-full flex items-center justify-center'>
+                <div className='flex-auto w-full flex items-center justify-center relative'>
                   <QRCode
+                    className=' h-full w-full absolute'
                     value={`http://localhost:5001/event/play?code=${roomCode}`}
                   />
                 </div>
@@ -78,28 +78,6 @@ function WaitingArea({ roomCode }: Props) {
                 </h3>
               </div>
             </div>
-          </div>
-        </div>
-        <div className=' h-10 bg-game-background px-4 py-1 flex items-center gap-5 text-sm justify-between'>
-          <p>
-            Host Devices: <span>0</span>
-          </p>
-          <div className=' flex gap-3 items-center'>
-            <Button
-              className=' py-0  h-max text-sm bg-transparent'
-              variant={'ghost'}>
-              Cancel & Exit Quiz
-            </Button>
-            <Button
-              className=' py-0 h-max text-sm bg-transparent'
-              variant={'ghost'}>
-              Start Game
-            </Button>
-            <Button
-              className=' py-0 h-max text-sm bg-transparent'
-              variant={'ghost'}>
-              <EnterFullScreenIcon />
-            </Button>
           </div>
         </div>
       </div>
