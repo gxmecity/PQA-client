@@ -154,7 +154,7 @@ export function Component() {
                       </span>{' '}
                       Go to{' '}
                       <span className=' underline'>
-                        {window.location.hostname}/host
+                        {window.location.hostname}/join-event
                       </span>{' '}
                       and enter this host code to remotely control your quiz.
                     </p>
@@ -162,7 +162,8 @@ export function Component() {
                       variant={'ghost'}
                       onClick={() => {
                         setRoomOpen(true)
-                        // globalQuizChannel.detach()
+                        globalQuizChannel.detach()
+                        eventChannels.hostChannel.publish('open-room', {})
                       }}
                       className='w-full max-w-[200px] mx-auto h-12 text-game'>
                       Continue to quiz room

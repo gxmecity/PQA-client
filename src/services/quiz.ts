@@ -17,7 +17,6 @@ export const quizApiSlice = apiSlice.injectEndpoints({
       providesTags: ['Quiz'],
       transformResponse: (res: SuccessHttpResponse<Quiz[]>) => res.data,
     }),
-
     createNewQuiz: builder.mutation<Quiz, Pick<Quiz, 'title' | 'description'>>({
       query: (data) => ({
         url: '/my-quiz',
@@ -83,10 +82,18 @@ export const quizApiSlice = apiSlice.injectEndpoints({
       transformResponse: (res: SuccessHttpResponse<Quiz>) => res.data,
       invalidatesTags: ['Quiz-Details', 'Quiz'],
     }),
+    getQuizRoomStatus: builder.query<QuizRoomData, string>({
+      query: (code) => ({
+        url: `/check-room-status?quizCode=${code}`,
+        method: 'GET',
+      }),
+      transformResponse: (res: SuccessHttpResponse<QuizRoomData>) => res.data,
+    }),
   }),
 })
 
 export const {
+  useLazyGetQuizRoomStatusQuery,
   useGetQuizDetailsQuery,
   useGetUserCreatedQuizQuery,
   useCreateNewQuizMutation,

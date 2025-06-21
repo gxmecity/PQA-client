@@ -108,9 +108,15 @@ function Question({
           </div>
         )}
       </div>
-      <div className=' absolute bottom-20 right-10'>
-        <CircularProgress value={timer} total={questionTime} />
-      </div>
+      {!!timer && (
+        <div className=' absolute bottom-20 right-10'>
+          <CircularProgress
+            color='#b1995f'
+            value={timer}
+            total={questionTime}
+          />
+        </div>
+      )}
     </div>
   )
 }

@@ -5,7 +5,9 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from '@/components/ui/popover'
-import { splitCodeInHalf } from '@/lib/utils'
+import { cn, splitCodeInHalf } from '@/lib/utils'
+import { gameSlice } from '@/redux/game'
+import { useAppSelector } from '@/redux/store'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
 
@@ -18,16 +20,48 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
   const [open, setOpen] = useState(false)
   const [openBonus, setOpenBonus] = useState(false)
 
+  const { totalPlayers, bonusLineUp, connectedRemoteDevices } = useAppSelector(
+    (state) => state.game
+  )
+
   return (
     <>
       <div className=' h-8 bg-game-background px-4 py-1 flex items-center gap-5 text-xs justify-between'>
         <div className=' flex gap-2 items-center flex-1'>
-          <p>Total players: 10</p>
-          <button
-            className='flex justify-center gap-2 w-max '
-            onClick={() => setOpenBonus(true)}>
-            Bonus: 10
-          </button>
+          <Popover>
+            <PopoverTrigger>
+              <p>
+                Total Players: <span>{totalPlayers.length}</span>
+              </p>
+            </PopoverTrigger>
+            <PopoverContent>
+              <div className='h-auto max-h-[500px] w-[300px]'>
+                {totalPlayers.map((player) => (
+                  <div
+                    key={player.clientId}
+                    className=' h-10 flex items-center text-sm justify-between'>
+                    <p>{player.name}</p>
+                    <span
+                      className={cn(
+                        'italic text-xs',
+                        player.status === 'offline'
+                          ? 'text-red-500'
+                          : ' text-green-600'
+                      )}>
+                      {player.status}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
+          {!!bonusLineUp.length && (
+            <button
+              className='flex justify-center gap-2 w-max '
+              onClick={() => setOpenBonus(true)}>
+              Bonus: <span>{bonusLineUp.length}</span>
+            </button>
+          )}
         </div>
         <div className='flex-1'>
           <button
@@ -40,7 +74,9 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
         <div className=' flex-1 flex justify-end'>
           <Popover>
             <PopoverTrigger>
-              <p>Hosts: 0</p>
+              <p>
+                Hosts: <span>{connectedRemoteDevices}</span>
+              </p>
             </PopoverTrigger>
             <PopoverContent>
               <div className=' w-[200px] flex flex-col gap-2 text-center'>
@@ -100,24 +136,34 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
       </AppDialog>
       <AppDialog open={openBonus} setOpen={setOpenBonus} title='Bonus Requests'>
         <div className='flex flex-col gap-2'>
-          {Array.from({ length: 10 }).map((_, index) => (
-            <div key={index} className=' h-12 border-b border-b-border'>
+          {bonusLineUp.map((request) => (
+            <div
+              key={request.gameId}
+              className=' h-12 border-b border-b-border'>
               <div className='flex items-center gap-2'>
                 <span className='text-xs'>Bonus Request by </span>
                 <span className='text-sm font-semibold italic'>
-                  We Know Nothing
+                  {request.name}
                 </span>
                 <span className=' flex items-center ml-auto gap-2'>
-                  <button className=' text-xs p-2 rounded-lg bg-black'>
+                  <Button
+                    variant={'ghost'}
+                    className=' text-xs !p-2 rounded-lg bg-black'
+                    disabled>
                     + Bonus
-                  </button>
+                  </Button>
                 </span>
               </div>
             </div>
           ))}
         </div>
         <div className=' flex justify-end'>
-          <Button>Clear List</Button>
+          <Button
+            onClick={() =>
+              gameSlice.actions.updateGameState({ bonusLineUp: [] })
+            }>
+            Clear List
+          </Button>
         </div>
       </AppDialog>
     </>

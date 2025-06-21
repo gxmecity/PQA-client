@@ -1,3 +1,5 @@
+import AppButton from '@/components/AppButton'
+import AppDialog from '@/components/AppDialog'
 import { Button } from '@/components/ui/button'
 import useFullscreen from '@/hooks/useFullScreen'
 import { useAppSelector } from '@/redux/store'
@@ -9,16 +11,19 @@ import {
   ReloadIcon,
 } from '@radix-ui/react-icons'
 import { RealtimeChannel } from 'ably'
-import { CircleX } from 'lucide-react'
-import { useMemo } from 'react'
+import { BellDot, CircleX, UserCircle } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 interface Props {
   hostChannel: RealtimeChannel
+  timer: number
 }
 
-function GameControlPanel({ hostChannel }: Props) {
+function GameControlPanel({ hostChannel, timer }: Props) {
   const { isFullscreen, exitFullscreen, activateFullscreen } = useFullscreen()
   const gameState = useAppSelector((state) => state.game)
+  const [openNotifyNoPlayerJoined, setOpenNotifyNoPlayerJoined] =
+    useState(false)
 
   const isTrivia = gameState.round?.type === 'trivia'
   const canEndRound = isTrivia ? gameState.question?.isLast : true
@@ -29,12 +34,37 @@ function GameControlPanel({ hostChannel }: Props) {
   const controls = useMemo(() => {
     if (!gameState.quiz_started) {
       return (
-        <Button
-          className='py-0 h-max text-xs bg-transparent'
-          variant='ghost'
-          onClick={() => handlePublish('start-quiz')}>
-          Start Quiz
-        </Button>
+        <>
+          <Button
+            className='py-0 h-max text-xs bg-transparent'
+            variant='ghost'
+            onClick={() =>
+              gameState.totalPlayers.length < 1
+                ? setOpenNotifyNoPlayerJoined(true)
+                : handlePublish('start-quiz')
+            }>
+            Start Quiz
+          </Button>
+          <AppDialog
+            open={openNotifyNoPlayerJoined}
+            setOpen={setOpenNotifyNoPlayerJoined}
+            title='No Team/Players Joined'
+            description='There are currently no teams or players joined in your event.'>
+            <div className=' flex items-center justify-between gap-5'>
+              <AppButton
+                text='Cancel'
+                variant='outline'
+                classname=' h-12 bg-black  font-bold w-full max-w-[300px]'
+                onClick={() => setOpenNotifyNoPlayerJoined(false)}
+              />
+              <AppButton
+                text='Start Game Anyway'
+                classname=' h-12 bg-black text-primary hover:bg-black font-bold w-full max-w-[300px] '
+                onClick={() => handlePublish('start-quiz')}
+              />
+            </div>
+          </AppDialog>
+        </>
       )
     }
 
@@ -65,6 +95,9 @@ function GameControlPanel({ hostChannel }: Props) {
 
         {round_started && isTrivia && (
           <Button
+            disabled={
+              gameState.question && !gameState.question.isLast ? true : false
+            }
             onClick={() => handlePublish('restart-round')}
             className='py-0 h-max text-xs bg-transparent'
             variant='ghost'>
@@ -84,6 +117,17 @@ function GameControlPanel({ hostChannel }: Props) {
           </Button>
         )}
 
+        {!isTrivia && round_started && !gameState.question && (
+          <Button
+            disabled={gameState.totalPlayers.length < 2}
+            onClick={() => handlePublish('set-question-index', { index: null })}
+            className='py-0 h-max text-xs bg-transparent'
+            variant='ghost'>
+            <UserCircle />
+            Next Dealer
+          </Button>
+        )}
+
         {gameState.question && (
           <>
             <Button
@@ -92,7 +136,7 @@ function GameControlPanel({ hostChannel }: Props) {
                   ? handlePublish('next-question')
                   : handlePublish('set-question-index', { index: null })
               }
-              disabled={gameState.question.isLast && isTrivia}
+              disabled={(gameState.question.isLast && isTrivia) || timer > 0}
               className='py-0 h-max text-xs bg-transparent'
               variant='ghost'>
               <CaretRightIcon /> Next Question
@@ -107,6 +151,18 @@ function GameControlPanel({ hostChannel }: Props) {
                   Start Answer Reveal
                 </Button>
               )}
+            {!isTrivia && (
+              <>
+                <Button
+                  disabled={timer > 0 || gameState.isRevealAnswer}
+                  onClick={() => handlePublish('allow-buzzer')}
+                  className='py-0 h-max text-xs bg-transparent'
+                  variant='ghost'>
+                  <BellDot />
+                  Open Buzzer
+                </Button>
+              </>
+            )}
             <Button
               disabled={
                 !gameState.canRevealAnswer ||

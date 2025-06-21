@@ -140,3 +140,11 @@ declare interface LeaderboardEntry {
   }
   score: number
 }
+
+declare interface QuizRoomData {
+  entryCode: string
+  totalPlayers: number
+  isHost: boolean
+  creator: string
+  eventMode: string
+}

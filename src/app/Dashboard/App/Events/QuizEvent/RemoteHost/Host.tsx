@@ -1,34 +1,35 @@
-import GameInterface from '@/components/GamePlayInterface'
+import Login from '@/app/Host/Login'
+import { ablyClient } from '@/lib/ably'
 import { gameActions } from '@/redux/game'
 import { useAppDisPatch, useAppSelector } from '@/redux/store'
-import { RealtimeChannel } from 'ably'
-import { useEffect, useState, useCallback } from 'react'
-import QuizRound from './QuizRound'
+import { useCallback, useEffect, useState } from 'react'
+import GameRound from './GameRound'
 import WaitingArea from './WaitingArea'
-import GameControlPanel from './_components/GameControlPanel'
-import GameStatusBar from './_components/GameStatusBar'
-import GameSplashScreen from '@/components/GameSplashScreen'
-import StartGameScreen from './_components/StartGameScreen'
-import { toast } from 'sonner'
+import QuizEnded from './QuizEnded'
 
-interface QuizGameProps {
-  hostChannel: RealtimeChannel
-  roomChannel: RealtimeChannel
-  hostEntryCode: string
-  entryCode: string
-}
+function Host({
+  roomCode,
+  creator,
+  gameMode,
+}: {
+  roomCode: string
+  creator: string
+  gameMode: string
+}) {
+  const clientId = ablyClient.auth.clientId
 
-function QuizGame({
-  hostChannel,
-  roomChannel,
-  hostEntryCode,
-  entryCode,
-}: QuizGameProps) {
+  const hostChannel = ablyClient.channels.get(`${roomCode}:host`)
+  const roomChannel = ablyClient.channels.get(`${roomCode}:primary`)
+
   const [timer, setTimer] = useState(0)
   const [questionTimer, setQuestionTimer] = useState(0)
-  const [startingQuiz, setStartingQuiz] = useState(false)
+  const [roomOpen, setRoomOpen] = useState(false)
 
-  const { quiz_started, quiz_ended } = useAppSelector((state) => state.game)
+  const { quiz_started, quiz_ended, totalPlayers } = useAppSelector(
+    (state) => state.game
+  )
+  const { user } = useAppSelector((state) => state.auth)
+
   const dispatch = useAppDisPatch()
 
   const handleMessage = useCallback(
@@ -42,29 +43,7 @@ function QuizGame({
         case 'exiting-player':
           dispatch(gameActions.updateExitingPlayerState(data.playerId))
           break
-
-        case 'new-remote-device':
-          toast.success('Remote Device Connected', {
-            description: `${data.deviceId} joined as a remote host device.`,
-          })
-          dispatch(
-            gameActions.updateGameState({
-              connectedRemoteDevices: data.hostDevices,
-            })
-          )
-          break
-        case 'exiting-remote-device':
-          toast.success('Remote Device Disconnected', {
-            description: `${data.deviceId} exited as a remote host device.`,
-          })
-          dispatch(
-            gameActions.updateGameState({
-              connectedRemoteDevices: data.hostDevices,
-            })
-          )
-          break
         case 'quiz-started':
-          setStartingQuiz(true)
           dispatch(
             gameActions.updateGameState({
               quiz_started: true,
@@ -149,10 +128,23 @@ function QuizGame({
       )
     })
 
+    hostChannel.subscribe('open-room', () => {
+      setRoomOpen(true)
+    })
+
+    hostChannel.subscribe('sync-state', (msg) => {
+      console.log(msg.data)
+      if (msg.data.clientId === clientId) {
+        setRoomOpen(true)
+        dispatch(gameActions.updateGameState({ ...msg.data.state }))
+      }
+    })
+
     return () => {
       eventNames.forEach((event) => roomChannel.unsubscribe(event))
+      hostChannel.unsubscribe('open-room')
     }
-  }, [roomChannel, handleMessage])
+  }, [roomChannel, hostChannel, handleMessage])
 
   const cleanupChannels = useCallback(() => {
     try {
@@ -164,60 +156,39 @@ function QuizGame({
   }, [roomChannel, hostChannel])
 
   useEffect(() => {
-    subscribeToRoomChannel()
-  }, [])
+    if (user && user._id === creator) {
+      subscribeToRoomChannel()
+      hostChannel.presence.enter()
+    }
+  }, [user])
 
-  if (quiz_ended)
-    return (
-      <GameSplashScreen>
-        <div className=' h-[300px] bg-game-background/60 backdrop-blur-xl backdrop-opacity-55 w-[500px] rounded-lg p-5  flex flex-col text-center justify-center'>
-          <h3 className=' text-2xl font-bold text-game-foreground'>
-            That's a wrap!
-          </h3>
-          <h1 className=' text-7xl text-game dharma-gothic-heavy'>
-            Thank you for playing
-          </h1>
-          <p className=' text-game-foreground'>
-            Brains were tested, and champions were made.
-          </p>
-        </div>
-      </GameSplashScreen>
-    )
+  if (!user) return <Login />
 
-  if (startingQuiz)
-    return (
-      <StartGameScreen onCompleteAnimation={() => setStartingQuiz(false)} />
-    )
+  if (user._id !== creator) return <div>Not Authorized</div>
 
-  if (!quiz_started) {
+  if (quiz_ended) return <QuizEnded />
+
+  if (!quiz_started)
     return (
-      <div className='h-screen flex flex-col'>
-        <GameStatusBar entryCode={entryCode} hostCode={hostEntryCode} />
-        <div className='flex-auto'>
-          <WaitingArea roomCode={entryCode} />
-        </div>
-        <GameControlPanel hostChannel={hostChannel} timer={questionTimer} />
-      </div>
+      <WaitingArea
+        roomCode={roomCode}
+        roomOpen={roomOpen}
+        totalPlayers={totalPlayers.length}
+        startQuiz={() => {
+          hostChannel.publish('start-quiz', {})
+        }}
+        user={user}
+      />
     )
-  }
 
   return (
-    <div className='h-dvh flex flex-col'>
-      <GameStatusBar entryCode={entryCode} hostCode={hostEntryCode} />
-      <div className='flex-1 overflow-auto'>
-        <GameInterface>
-          <div className='h-full'>
-            <QuizRound
-              hostChannel={hostChannel}
-              timer={timer}
-              questionTimer={questionTimer}
-            />
-          </div>
-        </GameInterface>
-      </div>
-      <GameControlPanel hostChannel={hostChannel} timer={questionTimer} />
-    </div>
+    <GameRound
+      timer={timer}
+      questionTimer={questionTimer}
+      hostChannel={hostChannel}
+      gameMode={gameMode}
+    />
   )
 }
 
-export default QuizGame
+export default Host

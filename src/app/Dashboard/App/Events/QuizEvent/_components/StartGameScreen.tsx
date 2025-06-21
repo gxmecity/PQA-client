@@ -28,14 +28,6 @@ function StartGameScreen({ onCompleteAnimation }: Props) {
         skewX: 0,
         duration: 2,
       })
-      .to(
-        '.page-main',
-        {
-          clipPath: 'circle(100%)',
-          duration: 1.5,
-        },
-        '-=0.3'
-      )
       .to('.brand-logo', {
         x: 0,
       })
@@ -47,6 +39,7 @@ function StartGameScreen({ onCompleteAnimation }: Props) {
       })
       .to('.start-screen-main', {
         opacity: 0,
+        delay: 1,
         duration: 1,
         onComplete: onCompleteAnimation,
       })

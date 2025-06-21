@@ -15,9 +15,14 @@ interface Props {
 }
 
 function QuizRound({ hostChannel, timer, questionTimer }: Props) {
-  const { round, question, isRevealAnswer, answeredQuestions } = useAppSelector(
-    (state) => state.game
-  )
+  const {
+    round,
+    question,
+    isRevealAnswer,
+    answeredQuestions,
+    dealer_index,
+    totalPlayers,
+  } = useAppSelector((state) => state.game)
   const [questionSelected, setQuestionSelected] = useState(false)
 
   const selectQuestion = (index: number) => {
@@ -55,6 +60,7 @@ function QuizRound({ hostChannel, timer, questionTimer }: Props) {
             handleSelectQuestion={selectQuestion}
             totalQuestions={round.totalQuestions}
             answeredQuestions={answeredQuestions}
+            dealer={totalPlayers[dealer_index]}
           />
         ) : (
           <div className=' h-full animate-pulse'>

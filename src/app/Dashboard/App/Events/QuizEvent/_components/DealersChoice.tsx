@@ -1,18 +1,32 @@
 import { cn } from '@/lib/utils'
+import { Player } from '@/redux/game'
 
 interface Props {
   handleSelectQuestion: (index: number) => void
   totalQuestions: number
   answeredQuestions: number[]
+  dealer?: Player
 }
 
 function DealersChoice({
   handleSelectQuestion,
   totalQuestions,
   answeredQuestions,
+  dealer,
 }: Props) {
   return (
     <div className=' h-full flex w-full flex-col justify-start px-1'>
+      {dealer && (
+        <div className=' flex items-center justify-center'>
+          <p className=' font-bold text-game text-xl'>
+            <span className=' font-medium text-game-foreground'>
+              Next turn:{' '}
+            </span>
+            {dealer.name}
+          </p>
+        </div>
+      )}
+
       <div className='  h-full w-full  gap-4 grid grid-cols-10 place-items-center '>
         {Array.from({ length: totalQuestions }).map((_, index) => (
           <button
