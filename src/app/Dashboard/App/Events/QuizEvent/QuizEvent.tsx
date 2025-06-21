@@ -11,12 +11,14 @@ import { RealtimeChannel } from 'ably'
 import { useState } from 'react'
 import { useParams, useSearchParams } from 'react-router-dom'
 import QuizGame from './QuizGame'
+import { useIsMobile } from '@/hooks/use-mobile'
 
 export function Component() {
   const { id } = useParams()
   const [params] = useSearchParams()
   const mode = params.get('mode')
   const globalQuizChannel = ablyClient.channels.get('tpq-main-quiz-thread')
+  const isMobile = useIsMobile()
 
   const [eventChannels, seteventChannels] = useState<{
     hostChannel: RealtimeChannel
@@ -64,6 +66,29 @@ export function Component() {
       eventType: gameModes[selectedMode!].mode,
     })
   }
+
+  if (isMobile)
+    return (
+      <GameSplashScreen>
+        <div className=' h-[300px] bg-game-background/55 backdrop-blur-xl backdrop-opacity-55 w-[500px] rounded-lg p-5 '>
+          <EmptyState
+            icon={
+              <div className=' w-[80px]'>
+                <AppLogo />
+              </div>
+            }
+            title='Small Screen Detected'
+            description='It appears you are trying to host a quiz from a small screen. For a better experience, use a larger screen to host and remotely control your quiz from your phone '>
+            <Button
+              variant='outline'
+              className='w-max mx-auto h-12'
+              onClick={() => window.location.replace('/dashboard/quiz')}>
+              Back to Quiz Dashboard
+            </Button>
+          </EmptyState>
+        </div>
+      </GameSplashScreen>
+    )
 
   if (isLoading)
     return (

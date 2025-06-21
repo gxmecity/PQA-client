@@ -9,6 +9,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import Host from './RemoteHost/Host'
+import Player from './Player/Player'
 
 export function Component() {
   const [roomData, setRoomData] = useState<QuizRoomData | null>(null)
@@ -50,7 +51,7 @@ export function Component() {
       />
     )
 
-  if (roomData) return <div>Player</div>
+  if (roomData) return <Player />
 
   return (
     <section className=' h-screen flex flex-col items-center justify-center relative'>
