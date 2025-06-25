@@ -108,7 +108,7 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
               <div className='flex-auto w-full flex items-center justify-center relative'>
                 <QRCode
                   className=' h-full w-full absolute'
-                  value={`http://localhost:5001/event/play?code=${entryCode}`}
+                  value={`${window.location.hostname}/join-event?code=${entryCode}`}
                 />
               </div>
             </div>
@@ -122,7 +122,7 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
             <p className=' text-sm text-muted-foreground text-center mt-2'>
               Go to{' '}
               <span className='font-semibold text-game underline'>
-                {window.location.hostname}/play
+                {window.location.hostname}/join-event
               </span>{' '}
               on your device and enter the code below:
             </p>

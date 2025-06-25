@@ -10,8 +10,11 @@ import { useState } from 'react'
 import { SubmitHandler, useForm } from 'react-hook-form'
 import Host from './RemoteHost/Host'
 import Player from './Player/Player'
+import { useSearchParams } from 'react-router-dom'
 
 export function Component() {
+  const [params] = useSearchParams()
+  const code = params.get('code')
   const [roomData, setRoomData] = useState<QuizRoomData | null>(null)
   const [errorMessage, setErrorMessage] = useState<{
     title: string
@@ -23,7 +26,7 @@ export function Component() {
   const form = useForm({
     resolver: zodResolver(joinRoomSchema),
     defaultValues: {
-      code: '',
+      code: code || '',
     },
   })
 

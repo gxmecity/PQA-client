@@ -4,11 +4,13 @@ import { apiSlice } from '@/services/apiSlice'
 import { authReducer } from './auth'
 import { setupListeners } from '@reduxjs/toolkit/query'
 import { gameReducer } from './game'
+import { playerGameReducer } from './player'
 
 const store = configureStore({
   reducer: {
     auth: authReducer,
     game: gameReducer,
+    player: playerGameReducer,
     [apiSlice.reducerPath]: apiSlice.reducer,
   },
   middleware: (getDefaultMiddleware) =>

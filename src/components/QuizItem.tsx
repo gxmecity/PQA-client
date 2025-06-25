@@ -1,4 +1,5 @@
-import { cn } from '@/lib/utils'
+import { cn, errorResponseHandler } from '@/lib/utils'
+import { useCreateHostedEventMutation } from '@/services/events'
 import { Computer, Pencil, Play, Users } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
@@ -41,12 +42,46 @@ const QuizItem = ({ data }: Prop) => {
   const [open, setOpen] = useState(false)
   const [selectedMode, setSelectedMode] = useState<number | null>(null)
 
+  const [createEvent, { isLoading: creatingEvent }] =
+    useCreateHostedEventMutation()
+
+  const handleEventQuizMode = async () => {
+    if (creatingEvent) return
+
+    try {
+      const response = await createEvent({
+        title: data.title,
+        quiz: data._id,
+      }).unwrap()
+
+      navigate(`/broadcast/${response._id}`)
+    } catch (error: any) {
+      errorResponseHandler(error)
+    }
+  }
+
+  const gameTypeOptions = [
+    {
+      name: 'Quiz Room Mode',
+      recommeded: true,
+      description:
+        'Updated Quiz UI and Functionality. Faster and better quiz experience, better host control.',
+      action: () => navigate(`/quiz-event/${data._id}`),
+    },
+    {
+      name: 'Quiz Event Mode',
+      recommeded: false,
+      description: 'Old Quiz UI. Limited host controls and quiz experiennce.',
+      action: handleEventQuizMode,
+    },
+  ]
+
   const handleCreateNewEvent = async () => {
     if (selectedMode === null) return
 
-    const selectedGameMode = gameModes[selectedMode]
+    const selectedOption = gameTypeOptions[selectedMode]
 
-    navigate(`/quiz-event/${data._id}?mode=${selectedGameMode.mode}`)
+    selectedOption.action()
   }
 
   return (
@@ -85,7 +120,7 @@ const QuizItem = ({ data }: Prop) => {
         title='Host a new Quiz Game'
         description='Choose a mode to start the quiz'>
         <div className='flex  gap-2 items-center'>
-          {gameModes.map((mode, index) => (
+          {gameTypeOptions.map((mode, index) => (
             <Button
               key={index}
               variant={'outline'}
@@ -94,24 +129,22 @@ const QuizItem = ({ data }: Prop) => {
                 selectedMode === index && ' border-primary text-primary'
               )}
               onClick={() => setSelectedMode(index)}>
-              {mode.icon}
-              <p>{mode.name}</p>
+              {mode.name}
+              {mode.recommeded && (
+                <span className='text-[9px] font-semibold'>(RECOMMENED)</span>
+              )}
             </Button>
           ))}
         </div>
         {selectedMode !== null && (
           <div className='mt-4 flex flex-col gap-3 text-center'>
             <small className='text-xs text-muted-foreground '>
-              {gameModes[selectedMode].description}
+              {gameTypeOptions[selectedMode].description}
             </small>
-            {!gameModes[selectedMode].active && (
-              <small className='text-xs text-primary uppercase '>
-                coming soon..
-              </small>
-            )}
+
             <Button
+              disabled={creatingEvent}
               className='w-full'
-              disabled={!gameModes[selectedMode].active}
               onClick={handleCreateNewEvent}>
               Start Quiz
             </Button>

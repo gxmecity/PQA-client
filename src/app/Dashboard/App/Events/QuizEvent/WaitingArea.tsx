@@ -54,7 +54,7 @@ function WaitingArea({ roomCode }: Props) {
                 <div className='flex-auto w-full flex items-center justify-center relative'>
                   <QRCode
                     className=' h-full w-full absolute'
-                    value={`http://localhost:5001/event/play?code=${roomCode}`}
+                    value={`${window.location.hostname}/join-event?code=${roomCode}`}
                   />
                 </div>
               </div>
@@ -68,7 +68,7 @@ function WaitingArea({ roomCode }: Props) {
               <p className=' text-sm text-muted-foreground text-center mt-2'>
                 Go to{' '}
                 <span className='font-semibold text-game underline'>
-                  {window.location.hostname}/play
+                  {window.location.hostname}/join-event
                 </span>{' '}
                 on your device and enter the code below:
               </p>

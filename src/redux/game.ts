@@ -74,7 +74,7 @@ export const gameSlice = createSlice({
     },
     updateExitingPlayerState: (state, action: PayloadAction<string>) => {
       const updatedPlayerState = state.totalPlayers.map((player) => {
-        if (player.gameId === action.payload)
+        if (player.clientId === action.payload)
           return { ...player, status: 'offline' }
 
         return player
