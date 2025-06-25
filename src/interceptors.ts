@@ -9,7 +9,7 @@ import axios, {
 
 const axiosInstance: AxiosInstance = axios.create({
   // baseURL: BASE_URL,
-  baseURL: 'https://pqa-server.vercel.app',
+  baseURL: 'https://pqa-server.onrender.com',
   headers: {
     'Content-Type': 'application/json',
   },
