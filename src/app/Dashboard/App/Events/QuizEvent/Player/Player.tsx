@@ -1,9 +1,9 @@
-import { useAppSelector } from '@/redux/store'
-import GameRound from './GameRound'
 import { ablyClient } from '@/lib/ably'
+import { playerSlice } from '@/redux/player'
+import { useAppSelector } from '@/redux/store'
 import { RealtimeChannel } from 'ably'
-import { useState, useCallback } from 'react'
-import { playerGameActions, playerSlice } from '@/redux/player'
+import { useCallback, useState } from 'react'
+import GameRound from './GameRound'
 
 function Player() {
   const { player, round, question, quiz_ended, quiz_started } = useAppSelector(
