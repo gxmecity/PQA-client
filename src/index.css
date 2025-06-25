@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@100..800&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
@@ -12,6 +14,8 @@
     --popover-foreground: 20 14.3% 4.1%;
     --primary: 47.9 95.8% 53.1%;
     --primary-foreground: 26 83.3% 14.1%;
+    --game-primary: '#afa17d';
+    --game-background: '#212121';
     --secondary: 60 4.8% 95.9%;
     --secondary-foreground: 24 9.8% 10%;
     --muted: 60 4.8% 95.9%;
@@ -78,11 +82,33 @@
 @layer base {
   * {
     @apply border-border;
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  *::-webkit-scrollbar {
+    display: none;
   }
   body {
     @apply bg-background text-foreground;
+    font-family: 'Sora', sans-serif;
   }
 }
+
+@font-face {
+  font-family: DharmaGotic-Regular;
+  src: url('./fonts/DharmaGothicE_Regular_R.otf');
+}
+
+@font-face {
+  font-family: DharmaGotic-Bold;
+  src: url('./fonts/DharmaGothicE_ExBold_R.otf');
+}
+
+@font-face {
+  font-family: DharmaGotic-Heavy;
+  src: url('./fonts/DharmaGothicE_Heavy_R.otf');
+}
+
 input::-webkit-outer-spin-button,
 input::-webkit-inner-spin-button {
   -webkit-appearance: none;
@@ -97,4 +123,16 @@ input[type='number'] {
 
 input {
   font-size: 16px !important;
+}
+
+.dharma-gothic {
+  font-family: 'DharmaGotic-Regular', sans-serif;
+}
+
+.dharma-gothic-bold {
+  font-family: 'DharmaGotic-Bold', sans-serif;
+}
+
+.dharma-gothic-heavy {
+  font-family: 'DharmaGotic-Heavy', sans-serif;
 }

@@ -5,9 +5,11 @@ import axios, {
   InternalAxiosRequestConfig,
 } from 'axios'
 
+const BASE_URL = import.meta.env.VITE_API_BASE_URL
+
 const axiosInstance: AxiosInstance = axios.create({
-  baseURL: 'https://pqa-server.vercel.app',
-  // baseURL: 'http://localhost:5000',
+  // baseURL: BASE_URL,
+  baseURL: 'http://localhost:5000',
   headers: {
     'Content-Type': 'application/json',
   },

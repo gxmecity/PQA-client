@@ -1,4 +1,12 @@
 /* 1. Use a more-intuitive box-sizing model */
+
+:root {
+  --panel-width: calc(100% / 6);
+  --darkblue: #02020c;
+  --white: #c4c4c4;
+  --lightgray: #c4c4c4;
+}
+
 *,
 *::before,
 *::after {
@@ -20,6 +28,9 @@
 
 .gd-text-primary {
   @apply inline-block bg-gradient-to-tr from-white to-primary text-transparent bg-clip-text;
+}
+.gd-text-game {
+  @apply inline-block bg-gradient-to-tr from-white to-game text-transparent bg-clip-text;
 }
 
 .progress {
@@ -56,4 +67,55 @@
 .hide-bg {
   mix-blend-mode: multiply;
   filter: contrast(1);
+}
+
+.panels {
+  position: fixed;
+  top: 0;
+  left: 50%;
+  width: 180vw;
+  height: 100%;
+  transform: translateX(-50%) skewX(-35deg);
+  clip-path: circle(100%);
+  z-index: 1;
+  background: var(--lightgray);
+}
+.panels .panel {
+  position: absolute;
+  top: 0;
+  left: 0;
+  bottom: 0;
+  width: var(--panel-width);
+  transform: scaleY(0);
+  transform-origin: top;
+  background: var(--darkblue);
+}
+.panels .panel:nth-child(even) {
+  transform-origin: bottom;
+}
+.panels .panel:nth-child(2) {
+  left: calc(var(--panel-width) - 1px);
+}
+.panels .panel:nth-child(3) {
+  left: calc(calc(var(--panel-width) * 2) - 2px);
+}
+.panels .panel:nth-child(4) {
+  left: calc(calc(var(--panel-width) * 3) - 4px);
+}
+.panels .panel:nth-child(5) {
+  left: calc(calc(var(--panel-width) * 4) - 5px);
+}
+.panels .panel:nth-child(6) {
+  left: calc(calc(var(--panel-width) * 5) - 6px);
+}
+.start-screen-main {
+  display: flex;
+  height: 100%;
+  padding: 100px 15px;
+  overflow-y: auto;
+  background: var(--darkblue);
+}
+.start-screen-main > div {
+  text-align: center;
+  margin: auto;
 }
