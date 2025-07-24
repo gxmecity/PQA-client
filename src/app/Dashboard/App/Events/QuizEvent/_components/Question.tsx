@@ -71,7 +71,7 @@ function Question({
             <p className=' text-2xl font-bold text-game-foreground w-full '>
               Question {index + 1}
             </p>
-            <h1 className=' dharma-gothic-heavy text-[6rem] gd-text-game w-full'>
+            <h1 className=' dharma-gothic-heavy text-[6rem] gd-text-game w-full leading-none'>
               {question.question_text}
             </h1>
             {question.question_type === 'multiple_choice' && (

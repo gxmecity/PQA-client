@@ -31,6 +31,12 @@ export const playerSlice = createSlice({
   initialState,
   reducers: {
     resetGame: () => initialState,
+    updatePlayerInfo: (state, action: PayloadAction<Partial<Player>>) => {
+      if (!state.player) {
+        state.player = { gameId: '', name: '' }
+      }
+      state.player = { ...state.player, ...action.payload }
+    },
     updateGameState: (
       state,
       action: PayloadAction<Partial<GlobalPlayerState>>

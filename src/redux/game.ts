@@ -27,7 +27,7 @@ export interface Player {
   status: string
 }
 
-export type BonusRequest = Pick<Player, 'gameId' | 'name'>
+export type BonusRequest = Pick<Player, 'gameId' | 'name' | 'avatar_url'>
 
 export interface GlobalGameState {
   quiz_started: boolean
@@ -84,11 +84,10 @@ export const gameSlice = createSlice({
     },
     addNewPlayerToState: (state, action: PayloadAction<Player>) => {
       const index = state.totalPlayers.findIndex(
-        (player) => player.player_id === action.payload.player_id
+        (player) => player.gameId === action.payload.gameId
       )
-
       if (index !== -1) {
-        state.totalPlayers[index] = action.payload
+        state.totalPlayers[index] = { ...action.payload }
       } else {
         state.totalPlayers.push(action.payload)
       }

@@ -1,15 +1,18 @@
+import { sigils } from '@/assets/sigils'
 import AppAvater from '@/components/AppAvater'
 import AppLogo from '@/components/AppLogo'
 import GameSplashScreen from '@/components/GameSplashScreen'
 import { splitCodeInHalf } from '@/lib/utils'
+import { Player } from '@/redux/game'
 import QRCode from 'react-qr-code'
 
 interface Props {
   roomCode: string
+  joinedPlayers: Player[]
 }
 
-function WaitingArea({ roomCode }: Props) {
-  const joinedPlayers: any[] = []
+function WaitingArea({ roomCode, joinedPlayers }: Props) {
+  console.log(joinedPlayers)
   return (
     <GameSplashScreen>
       <div className=' h-full w-full flex flex-col gap-5 p-5'>
@@ -29,19 +32,41 @@ function WaitingArea({ roomCode }: Props) {
 
             <div className=' flex-auto grid grid-cols-2 gap-2 rounded-lg'>
               <div className='bg-game-background/50 flex flex-col gap-2 py-4'>
-                {joinedPlayers.map((_, index) => (
+                {joinedPlayers.slice(0, 9).map((player, index) => (
                   <div
                     key={index}
                     className=' flex-auto max-h-16  bg-game-background/80 px-3 flex items-center gap-3'>
-                    <AppAvater fallbackText='Minions' />
-                    <p className=' text-lg font-bold text-white/80'>Minions</p>
+                    <AppAvater
+                      fallbackText={player.name}
+                      img_url={sigils[player.avatar_url]}
+                    />
+                    <p className=' text-lg font-bold text-white/80'>
+                      {player.name}
+                    </p>
                     <span className=' ml-auto  dharma-gothic-bold h-full text-3xl grid place-items-center w-10  border-l border-l-game/50 text-game'>
                       {index + 1}
                     </span>
                   </div>
                 ))}
               </div>
-              {/* <div className='bg-game-background/50'></div> */}
+              <div className='bg-game-background/50'>
+                {joinedPlayers.slice(10, 19).map((player, index) => (
+                  <div
+                    key={index}
+                    className=' flex-auto max-h-16  bg-game-background/80 px-3 flex items-center gap-3'>
+                    <AppAvater
+                      fallbackText={player.name}
+                      img_url={sigils[player.avatar_url]}
+                    />
+                    <p className=' text-lg font-bold text-white/80'>
+                      {player.name}
+                    </p>
+                    <span className=' ml-auto  dharma-gothic-bold h-full text-3xl grid place-items-center w-10  border-l border-l-game/50 text-game'>
+                      {index + 1}
+                    </span>
+                  </div>
+                ))}
+              </div>
             </div>
           </div>
           <div className=' flex flex-col items-center gap-5 justify-center'>

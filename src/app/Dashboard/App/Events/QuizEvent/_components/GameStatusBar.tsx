@@ -6,8 +6,8 @@ import {
   PopoverTrigger,
 } from '@/components/ui/popover'
 import { cn, splitCodeInHalf } from '@/lib/utils'
-import { gameSlice } from '@/redux/game'
-import { useAppSelector } from '@/redux/store'
+import { gameActions } from '@/redux/game'
+import { useAppDisPatch, useAppSelector } from '@/redux/store'
 import { useState } from 'react'
 import QRCode from 'react-qr-code'
 
@@ -19,6 +19,7 @@ interface Props {
 function GameStatusBar({ entryCode, hostCode }: Props) {
   const [open, setOpen] = useState(false)
   const [openBonus, setOpenBonus] = useState(false)
+  const dispatch = useAppDisPatch()
 
   const { totalPlayers, bonusLineUp, connectedRemoteDevices } = useAppSelector(
     (state) => state.game
@@ -35,7 +36,7 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
               </p>
             </PopoverTrigger>
             <PopoverContent>
-              <div className='h-auto max-h-[500px] w-[300px]'>
+              <div className='h-auto max-h-[500px]'>
                 {totalPlayers.map((player) => (
                   <div
                     key={player.clientId}
@@ -160,7 +161,7 @@ function GameStatusBar({ entryCode, hostCode }: Props) {
         <div className=' flex justify-end'>
           <Button
             onClick={() =>
-              gameSlice.actions.updateGameState({ bonusLineUp: [] })
+              dispatch(gameActions.updateGameState({ bonusLineUp: [] }))
             }>
             Clear List
           </Button>

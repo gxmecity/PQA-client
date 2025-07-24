@@ -54,7 +54,14 @@ export function Component() {
       />
     )
 
-  if (roomData) return <Player />
+  if (roomData)
+    return (
+      <Player
+        roomCode={roomData.entryCode}
+        creator={roomData.creator}
+        gameMode={roomData.eventMode}
+      />
+    )
 
   return (
     <section className=' h-screen flex flex-col items-center justify-center relative'>

@@ -146,3 +146,9 @@ export const joinRoomSchema = z.object({
 export const playerSelectTeamSchema = z.object({
   passphrase: z.string().min(1, 'Field is required'),
 })
+
+export const playerJoinSchema = z.object({
+  name: z.string().min(1, 'Field is required'),
+  gameId: z.string().min(1, 'Field is required'),
+  avatar: z.string().optional(),
+})

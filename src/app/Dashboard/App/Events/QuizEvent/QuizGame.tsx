@@ -28,7 +28,9 @@ function QuizGame({
   const [questionTimer, setQuestionTimer] = useState(0)
   const [startingQuiz, setStartingQuiz] = useState(false)
 
-  const { quiz_started, quiz_ended } = useAppSelector((state) => state.game)
+  const { quiz_started, quiz_ended, totalPlayers } = useAppSelector(
+    (state) => state.game
+  )
   const dispatch = useAppDisPatch()
 
   const handleMessage = useCallback(
@@ -38,6 +40,9 @@ function QuizGame({
       switch (name) {
         case 'new-player':
           dispatch(gameActions.addNewPlayerToState(data.player))
+          toast.success('New Player Joined', {
+            description: `${data.player.name} has joined the game.`,
+          })
           break
         case 'exiting-player':
           dispatch(gameActions.updateExitingPlayerState(data.playerId))
@@ -140,6 +145,7 @@ function QuizGame({
       'new-player',
       'exiting-player',
       'show-answer',
+      'bonus-request',
       'quiz-ended',
     ]
 
@@ -194,7 +200,7 @@ function QuizGame({
       <div className='h-screen flex flex-col'>
         <GameStatusBar entryCode={entryCode} hostCode={hostEntryCode} />
         <div className='flex-auto'>
-          <WaitingArea roomCode={entryCode} />
+          <WaitingArea roomCode={entryCode} joinedPlayers={totalPlayers} />
         </div>
         <GameControlPanel hostChannel={hostChannel} timer={questionTimer} />
       </div>
